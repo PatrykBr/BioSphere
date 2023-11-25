@@ -2,7 +2,7 @@ using Unity.VisualScripting;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.UI;
-
+//test this on laptop
 public enum MenuScreen { MainMenu, Settings, Credits, PlayScreen }
 
 public class MainMenuManager : MonoBehaviour

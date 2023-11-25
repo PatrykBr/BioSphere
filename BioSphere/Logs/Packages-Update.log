@@ -52,3 +52,13 @@ Update Mode: updateDependencies
 The following packages were updated:
   com.unity.collab-proxy from version 2.0.7 to 2.1.0
   com.unity.ide.rider from version 3.0.24 to 3.0.25
+
+=== Sat Nov 25 18:50:35 2023
+
+Packages were changed.
+Update Mode: updateDependencies
+
+The following packages were updated:
+  com.unity.collab-proxy from version 2.1.0 to 2.2.0
+  com.unity.ide.rider from version 3.0.25 to 3.0.26
+  com.unity.timeline from version 1.7.5 to 1.7.6
