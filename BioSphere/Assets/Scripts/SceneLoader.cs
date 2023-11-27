@@ -19,6 +19,9 @@ public class MainMenuManager : MonoBehaviour
     private GameObject WorldSelectionPanel;
     private GameObject CreateWorldPanel;
 
+    private string input;
+    private float slider = 1;
+
     private void Start()
     {
         WorldSelectionPanel = playPanel.transform.Find("Bg").Find("WorldSelection").gameObject;
@@ -133,4 +136,37 @@ public class MainMenuManager : MonoBehaviour
         // Show CreateWorldPanel
         CreateWorldPanel.SetActive(true);
     }
+
+    public void ReadStringInput(string s)
+    {
+        input = s;
+        Debug.LogFormat("Input: {0}", input);
+    }
+
+    public void ShowSliderValue(float f)
+    {
+        slider = f;
+        Debug.Log(slider);
+    }
+
+    public void CreateWorld()
+    {
+        //World writeWorld = new World()
+        //{
+        //    WorldName = input,
+        //    WorldDifficulty = (slider == 0) ? "Easy" : (slider == 1) ? "Medium" : "Hard",
+        //};
+
+        World writeWorld = new World(
+            input,
+            (slider == 0) ? "Easy" : (slider == 1) ? "Medium" : "Hard"
+        );
+
+
+        if (writeWorld.WorldName != "")
+        {
+            World.WriteWorldJSON(writeWorld);
+        }
+    }
+
 }
