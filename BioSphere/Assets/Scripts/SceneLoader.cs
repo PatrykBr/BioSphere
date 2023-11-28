@@ -214,7 +214,7 @@ public class MainMenuManager : MonoBehaviour
         Debug.Log("World Difficulty: " + loadedWorld.WorldDifficulty);
         Debug.Log("TimesDied: " + loadedWorld.TimesDied);
 
-        Creature.CalcStats(worldName);
+        //Creature.CalcStats(worldName);
     }
 
 }
