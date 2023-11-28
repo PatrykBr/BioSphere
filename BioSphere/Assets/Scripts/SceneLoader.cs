@@ -1,8 +1,12 @@
+using System.IO;
 using Unity.VisualScripting;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.UI;
-//test this on laptop
+using UnityEngine.SceneManagement;
+using TMPro;
+using System.Collections.Generic;
+
 public enum MenuScreen { MainMenu, Settings, Credits, PlayScreen }
 
 public class MainMenuManager : MonoBehaviour
@@ -12,6 +16,7 @@ public class MainMenuManager : MonoBehaviour
     public GameObject settingsPanel;
     public GameObject creditsPanel;
     public GameObject playPanel;
+    public GameObject templatePrefab;
 
     private GameObject GeneralMainFrame;
     private GameObject SoundMainFrame;
@@ -59,6 +64,9 @@ public class MainMenuManager : MonoBehaviour
     public void ShowPlayScreen()
     {
         ShowScreen(MenuScreen.PlayScreen);
+
+        // Load and display worlds when entering the play screen
+        LoadAndDisplayWorlds();
     }
 
     public void GoBack()
@@ -140,33 +148,73 @@ public class MainMenuManager : MonoBehaviour
     public void ReadStringInput(string s)
     {
         input = s;
-        Debug.LogFormat("Input: {0}", input);
     }
 
     public void ShowSliderValue(float f)
     {
         slider = f;
-        Debug.Log(slider);
     }
 
     public void CreateWorld()
     {
-        //World writeWorld = new World()
-        //{
-        //    WorldName = input,
-        //    WorldDifficulty = (slider == 0) ? "Easy" : (slider == 1) ? "Medium" : "Hard",
-        //};
-
         World writeWorld = new World(
             input,
             (slider == 0) ? "Easy" : (slider == 1) ? "Medium" : "Hard"
-        );
+        )
+        {
+            Features = new string[] { "Small fin" }
+        };
 
-
+        //check if name is empty
         if (writeWorld.WorldName != "")
         {
             World.WriteWorldJSON(writeWorld);
         }
+    }
+
+    private void LoadAndDisplayWorlds()
+    {
+        Transform contentTransform = WorldSelectionPanel.transform.Find("Scroll View").Find("Viewport").Find("Content");
+
+        // Clear existing world entries
+        foreach (Transform child in contentTransform)
+        {
+            Destroy(child.gameObject);
+        }
+
+        // Load worlds and instantiate templates
+        string[] jsonFiles = Directory.GetFiles(World.WorldDirectory, "*.json");
+
+        foreach (string jsonFile in jsonFiles)
+        {
+            string worldName = Path.GetFileNameWithoutExtension(jsonFile);
+            InstantiateWorldEntry(contentTransform, worldName);
+        }
+    }
+
+    private void InstantiateWorldEntry(Transform parentTransform, string worldName)
+    {
+        GameObject templateInstance = Instantiate(templatePrefab, parentTransform);
+        templateInstance.SetActive(true);
+
+        TextMeshProUGUI nameText = templateInstance.transform.Find("Name").GetComponent<TextMeshProUGUI>();
+        nameText.text = worldName;
+
+        Button playButton = templateInstance.transform.Find("PlayButton").GetComponent<Button>();
+        playButton.onClick.AddListener(() => LoadWorld(worldName));
+    }
+
+
+    private void LoadWorld(string worldName)
+    {
+        // Read the world data from the JSON file
+        World loadedWorld = World.ReadWorldJSON(worldName);
+
+        Debug.Log("World Name: " + loadedWorld.WorldName);
+        Debug.Log("World Difficulty: " + loadedWorld.WorldDifficulty);
+        Debug.Log("TimesDied: " + loadedWorld.TimesDied);
+
+        Creature.CalcStats(worldName);
     }
 
 }

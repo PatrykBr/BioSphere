@@ -1,0 +1,21 @@
+{
+    "creatureFeatures": [
+        {
+            "name": "Big Eyes",
+            "unlocked": false,
+            "stat": {
+                "vision": 10
+            },
+            "sprite": "big_eyes.png"
+        },
+        {
+            "name": "Small Body",
+            "unlocked": false,
+            "stat": {
+                "speed": 15
+            },
+            "sprite": "small_body.png"
+        }
+    ],
+    "worlds": []
+}
