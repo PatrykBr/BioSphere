@@ -6,6 +6,7 @@ using UnityEngine.UI;
 using UnityEngine.SceneManagement;
 using TMPro;
 using System.Collections.Generic;
+using UnityEngine.EventSystems;
 
 public enum MenuScreen { MainMenu, Settings, Credits, PlayScreen }
 
@@ -16,6 +17,7 @@ public class MainMenuManager : MonoBehaviour
     public GameObject settingsPanel;
     public GameObject creditsPanel;
     public GameObject playPanel;
+    public GameObject creatorPanel;
     public GameObject templatePrefab;
 
     private GameObject GeneralMainFrame;
@@ -23,16 +25,19 @@ public class MainMenuManager : MonoBehaviour
 
     private GameObject WorldSelectionPanel;
     private GameObject CreateWorldPanel;
+    private GameObject EditWorldPanel;
 
     private string input;
     private float slider = 1;
 
     private void Start()
     {
-        WorldSelectionPanel = playPanel.transform.Find("Bg").Find("WorldSelection").gameObject;
-        CreateWorldPanel = playPanel.transform.Find("Bg").Find("CreateWorld").gameObject;
+        WorldSelectionPanel = playPanel.transform.Find("WorldSelection").gameObject;
+        CreateWorldPanel = playPanel.transform.Find("CreateWorld").gameObject;
+        EditWorldPanel = playPanel.transform.Find("EditWorld").gameObject;
         CreateWorldPanel.SetActive(false);
         WorldSelectionPanel.SetActive(false);
+        EditWorldPanel.SetActive(false);
 
         // Initially, set the main menu as the current screen
         ShowScreen(MenuScreen.MainMenu);
@@ -97,6 +102,7 @@ public class MainMenuManager : MonoBehaviour
         settingsPanel.SetActive(false);
         creditsPanel.SetActive(false);
         playPanel.SetActive(false);
+        creatorPanel.SetActive(false);
         // Enable the panel for the selected screen
         switch (screen)
         {
@@ -112,6 +118,7 @@ public class MainMenuManager : MonoBehaviour
             case MenuScreen.PlayScreen:
                 playPanel.SetActive(true);
                 WorldSelectionPanel.SetActive(true);
+                
                 break;
         }
     }
@@ -155,20 +162,36 @@ public class MainMenuManager : MonoBehaviour
         slider = f;
     }
 
-    public void CreateWorld()
+    public void CreateWorld(string editWorld)
     {
-        World writeWorld = new World(
-            input,
-            (slider == 0) ? "Easy" : (slider == 1) ? "Medium" : "Hard"
-        )
+        string ClickedButtonName = EventSystem.current.currentSelectedGameObject.name;
+        if (string.IsNullOrEmpty(editWorld))
         {
-            Features = new string[] { "Small fin" }
-        };
+            World writeWorld = new World(
+                input,
+                (slider == 0) ? "Easy" : (slider == 1) ? "Medium" : "Hard"
+            )
+            {
+                Features = new string[] { "Small fin" }
+            };
 
-        //check if name is empty
-        if (writeWorld.WorldName != "")
+            //check if name is empty
+            if (writeWorld.WorldName != "")
+            {
+                World.WriteWorldJSON(writeWorld);
+            }
+        }
+        else
         {
-            World.WriteWorldJSON(writeWorld);
+            // Read the current world data
+            World currentWorld = World.ReadWorldJSON(editWorld);
+
+            // Modify the world data based on user input (new name and difficulty)
+            currentWorld.WorldName = input;
+            currentWorld.WorldDifficulty = (slider == 0) ? "Easy" : (slider == 1) ? "Medium" : "Hard";
+
+            // Write the updated world data back to the file
+            World.WriteWorldJSON(currentWorld);
         }
     }
 
@@ -202,8 +225,23 @@ public class MainMenuManager : MonoBehaviour
 
         Button playButton = templateInstance.transform.Find("PlayButton").GetComponent<Button>();
         playButton.onClick.AddListener(() => LoadWorld(worldName));
+
+        Button settingsButton = templateInstance.transform.Find("SettingsButton").GetComponent<Button>();
+        settingsButton.onClick.AddListener(() => LoadSettings(worldName));
     }
 
+    private void LoadSettings(string worldName)
+    {
+        GameObject confirmationScreen = playPanel.transform.Find("EditWorld").Find("Confirmation").gameObject;
+
+        World loadedWorld = World.ReadWorldJSON(worldName);
+        Debug.Log(loadedWorld.WorldName);
+        EditWorldPanel.transform.Find("EditScreen").Find("WorldName").GetComponent<InputField>().text = loadedWorld.WorldName; //FIX THIS
+
+        WorldSelectionPanel.SetActive(false);
+        confirmationScreen.SetActive(false);
+        EditWorldPanel.SetActive(true);
+    }
 
     private void LoadWorld(string worldName)
     {
