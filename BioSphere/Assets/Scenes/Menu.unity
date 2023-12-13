@@ -8028,19 +8028,7 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 1052336646}
   m_OnClick:
     m_PersistentCalls:
-      m_Calls:
-      - m_Target: {fileID: 814088930}
-        m_TargetAssemblyTypeName: MainMenuManager, Assembly-CSharp
-        m_MethodName: CreateWorld
-        m_Mode: 1
-        m_Arguments:
-          m_ObjectArgument: {fileID: 0}
-          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-          m_IntArgument: 0
-          m_FloatArgument: 0
-          m_StringArgument: 
-          m_BoolArgument: 0
-        m_CallState: 2
+      m_Calls: []
 --- !u!114 &1052336646
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -8242,9 +8230,9 @@ RectTransform:
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 1428454694}
+  - {fileID: 2011902517}
   - {fileID: 496451121}
   - {fileID: 832100255}
-  - {fileID: 2011902517}
   - {fileID: 1052336644}
   - {fileID: 1714425058}
   - {fileID: 430653434}
@@ -12132,7 +12120,7 @@ MonoBehaviour:
       m_Calls:
       - m_Target: {fileID: 814088930}
         m_TargetAssemblyTypeName: MainMenuManager, Assembly-CSharp
-        m_MethodName: CreateWorld
+        m_MethodName: GoBack
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}

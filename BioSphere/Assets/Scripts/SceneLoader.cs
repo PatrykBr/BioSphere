@@ -77,10 +77,11 @@ public class MainMenuManager : MonoBehaviour
     public void GoBack()
     {
         // Check if CreateWorldPanel is active
-        if (CreateWorldPanel.activeSelf)
+        if (CreateWorldPanel.activeSelf || EditWorldPanel.activeSelf)
         {
             // Hide CreateWorldPanel
             CreateWorldPanel.SetActive(false);
+            EditWorldPanel.SetActive(false);
 
             // Show WorldSelectionPanel (PlayMainFrame)
             WorldSelectionPanel.SetActive(true);
@@ -118,7 +119,6 @@ public class MainMenuManager : MonoBehaviour
             case MenuScreen.PlayScreen:
                 playPanel.SetActive(true);
                 WorldSelectionPanel.SetActive(true);
-                
                 break;
         }
     }
@@ -162,42 +162,61 @@ public class MainMenuManager : MonoBehaviour
         slider = f;
     }
 
-    public void CreateWorld(string editWorld)
+    public void CreateWorld()
     {
-        string ClickedButtonName = EventSystem.current.currentSelectedGameObject.name;
-        if (string.IsNullOrEmpty(editWorld))
+        World writeWorld = new World(
+            input,
+            (slider == 0) ? "Easy" : (slider == 1) ? "Medium" : "Hard"
+        )
         {
-            World writeWorld = new World(
-                input,
-                (slider == 0) ? "Easy" : (slider == 1) ? "Medium" : "Hard"
-            )
-            {
-                Features = new string[] { "Small fin" }
-            };
-
-            //check if name is empty
-            if (writeWorld.WorldName != "")
-            {
-                World.WriteWorldJSON(writeWorld);
-            }
-        }
-        else
+            Features = new string[] { "Small fin" }
+        };
+        //check if name is empty
+        if (writeWorld.WorldName != "")
         {
-            // Read the current world data
-            World currentWorld = World.ReadWorldJSON(editWorld);
-
-            // Modify the world data based on user input (new name and difficulty)
-            currentWorld.WorldName = input;
-            currentWorld.WorldDifficulty = (slider == 0) ? "Easy" : (slider == 1) ? "Medium" : "Hard";
-
-            // Write the updated world data back to the file
-            World.WriteWorldJSON(currentWorld);
+            World.WriteWorldJSON(writeWorld);
         }
     }
 
+    private void EditTemplate(World loadedWorld)
+    {
+        // Store the old world name
+        string oldWorldName = loadedWorld.WorldName;
+
+        // Modify the world data based on user input (new name and difficulty)
+        loadedWorld.WorldName = input;
+        loadedWorld.WorldDifficulty = (slider == 0) ? "Easy" : (slider == 1) ? "Medium" : "Hard";
+
+        // Rename the JSON file if the world name is changed
+        if (oldWorldName != loadedWorld.WorldName)
+        {
+            string oldFilePath = Path.Combine(World.WorldDirectory, oldWorldName + ".json");
+            string newFilePath = Path.Combine(World.WorldDirectory, loadedWorld.WorldName + ".json");
+            Debug.Log("in");
+            if (File.Exists(oldFilePath))
+            {
+                File.Move(oldFilePath, newFilePath);
+            }
+            else
+            {
+                Debug.LogError($"Error: File {oldFilePath} not found.");
+            }
+        }
+
+        // Write the updated world data back to the file
+
+        World.WriteWorldJSON(loadedWorld);
+
+        WorldSelectionPanel.SetActive(true);
+        EditWorldPanel.SetActive(false);
+        LoadAndDisplayWorlds();
+    }
+
+
     private void LoadAndDisplayWorlds()
     {
-        Transform contentTransform = WorldSelectionPanel.transform.Find("Scroll View").Find("Viewport").Find("Content");
+        //Debug.Log("loaded");
+        Transform contentTransform = WorldSelectionPanel.transform.Find("Scroll View/Viewport/Content");
 
         // Clear existing world entries
         foreach (Transform child in contentTransform)
@@ -232,11 +251,18 @@ public class MainMenuManager : MonoBehaviour
 
     private void LoadSettings(string worldName)
     {
-        GameObject confirmationScreen = playPanel.transform.Find("EditWorld").Find("Confirmation").gameObject;
+        GameObject confirmationScreen = playPanel.transform.Find("EditWorld/Confirmation").gameObject;
 
         World loadedWorld = World.ReadWorldJSON(worldName);
-        Debug.Log(loadedWorld.WorldName);
-        EditWorldPanel.transform.Find("EditScreen").Find("WorldName").GetComponent<InputField>().text = loadedWorld.WorldName; //FIX THIS
+        int difficultyValue = loadedWorld.WorldDifficulty == "Easy" ? 0 : (loadedWorld.WorldDifficulty == "Medium" ? 1 : (loadedWorld.WorldDifficulty == "Hard" ? 2 : -1));
+
+        EditWorldPanel.transform.Find("EditScreen/WorldName").GetComponent<TMP_InputField>().text = loadedWorld.WorldName;
+        EditWorldPanel.transform.Find("EditScreen/Difficulty/Slider").GetComponent<Slider>().value = difficultyValue;
+
+        Button saveEditButton = EditWorldPanel.transform.Find("EditScreen/SaveEdit").GetComponent<Button>();
+        saveEditButton.onClick.AddListener(() => EditTemplate(loadedWorld));
+
+        // CreateWorld(loadedWorld.WorldName);
 
         WorldSelectionPanel.SetActive(false);
         confirmationScreen.SetActive(false);
