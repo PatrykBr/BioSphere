@@ -12,7 +12,7 @@ public class World
     public string[] Features;
 
     public static string WorldDirectory = Application.persistentDataPath + "/worlds/";
-
+    // C:/Users/patbr/AppData/LocalLow/DefaultCompany/BioSphere/worlds/
     // constructor with default values
     public World(string name, string difficulty)
     {
@@ -31,7 +31,7 @@ public class World
 
     public static void WriteWorldJSON(World world)
     {
-       // Debug.Log(WorldDirectory);
+        // Debug.Log(WorldDirectory);
 
         string jsonString = JsonUtility.ToJson(world);
         string filePath = WorldDirectory + world.WorldName + ".json";
