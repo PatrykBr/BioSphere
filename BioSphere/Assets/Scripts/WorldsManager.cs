@@ -11,9 +11,8 @@ public class World
     public float TimePlayed;
     public string[] Features;
 
-    public static string WorldDirectory = Application.persistentDataPath + "/worlds/";
-    // C:/Users/patbr/AppData/LocalLow/DefaultCompany/BioSphere/worlds/
-    // constructor with default values
+    public static string WorldDirectory = Application.dataPath + "/Worlds/";
+
     public World(string name, string difficulty)
     {
         WorldName = name;
@@ -31,16 +30,8 @@ public class World
 
     public static void WriteWorldJSON(World world)
     {
-        // Debug.Log(WorldDirectory);
-
         string jsonString = JsonUtility.ToJson(world);
         string filePath = WorldDirectory + world.WorldName + ".json";
         File.WriteAllText(filePath, jsonString);
-    }
-
-    void SampleCast()
-    {
-        // float cake = (float)playerHealth;
-        //  double pie = cake;
     }
 }

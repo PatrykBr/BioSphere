@@ -3,7 +3,7 @@ using System.IO;
 using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
-
+using System.Collections;
 public enum MenuScreen { MainMenu, Settings, Credits, PlayScreen }
 
 public class MainMenuManager : MonoBehaviour
@@ -144,8 +144,25 @@ public class MainMenuManager : MonoBehaviour
 
     #region PlayScreen
 
+    private void ResetCreateWorldPanel()
+    {
+        Transform createWorldPanel = CreateWorldPanel.transform;
+
+        // Reset WorldName Text Area
+        TMP_InputField worldNameInputField = createWorldPanel.Find("WorldName").GetComponent<TMP_InputField>();
+        worldNameInputField.text = "";
+
+        // Reset Difficulty Slider
+        Slider difficultySlider = createWorldPanel.Find("Difficulty/Slider").GetComponent<Slider>();
+        difficultySlider.value = 1;
+    }
+
+
+
     public void OnCreateButtonPressed()
     {
+        ResetCreateWorldPanel();
+
         WorldSelectionPanel.SetActive(false);
         CreateWorldPanel.SetActive(true);
     }
@@ -153,6 +170,12 @@ public class MainMenuManager : MonoBehaviour
     public void ReadStringInput(string s) => input = s;
 
     public void ShowSliderValue(float f) => slider = f;
+
+    private IEnumerator HideErrorText(TextMeshProUGUI ErrorText)
+    {
+        yield return new WaitForSeconds(3);
+        ErrorText.gameObject.SetActive(false);
+    }
 
     public void CreateWorld()
     {
@@ -163,11 +186,33 @@ public class MainMenuManager : MonoBehaviour
         {
             Features = new string[] { "Small_Fin" }
         };
+        TextMeshProUGUI ErrorText = CreateWorldPanel.transform.Find("ErrorText").gameObject.GetComponent<TextMeshProUGUI>();
 
-        if (!string.IsNullOrEmpty(writeWorld.WorldName))
+        if (string.IsNullOrEmpty(writeWorld.WorldName))
         {
-            World.WriteWorldJSON(writeWorld);
+            ErrorText.text = "Error: World name cannot be empty.";
+            ErrorText.gameObject.SetActive(true);
+            StartCoroutine(HideErrorText(ErrorText));
+            return;
         }
+
+        if (writeWorld.WorldName.Length > 15)
+        {
+            ErrorText.text = "Error: World name cannot be longer than 15 characters.";
+            ErrorText.gameObject.SetActive(true);
+            StartCoroutine(HideErrorText(ErrorText));
+            return;
+        }
+
+        if (writeWorld.WorldName.Length < 2)
+        {
+            ErrorText.text = "Error: World name cannot be less than 2 characters.";
+            ErrorText.gameObject.SetActive(true);
+            StartCoroutine(HideErrorText(ErrorText));
+            return;
+        }
+
+        World.WriteWorldJSON(writeWorld);
 
         CreateWorldPanel.SetActive(false);
         LoadAndDisplayWorlds();
@@ -197,6 +242,8 @@ public class MainMenuManager : MonoBehaviour
     {
         string oldFilePath = Path.Combine(World.WorldDirectory, oldName + ".json");
         string newFilePath = Path.Combine(World.WorldDirectory, newName + ".json");
+        string oldMetaFilePath = Path.Combine(World.WorldDirectory, oldName + ".json.meta");
+        string newMetaFilePath = Path.Combine(World.WorldDirectory, newName + ".json.meta");
 
         if (!File.Exists(oldFilePath))
         {
@@ -214,12 +261,19 @@ public class MainMenuManager : MonoBehaviour
         {
             File.Move(oldFilePath, newFilePath);
             Debug.Log($"Successfully renamed file from {oldName} to {newName}");
+
+            if (File.Exists(oldMetaFilePath))
+            {
+                File.Move(oldMetaFilePath, newMetaFilePath);
+                Debug.Log($"Successfully renamed meta file from {oldName}.json.meta to {newName}.json.meta");
+            }
         }
         catch (Exception e)
         {
             Debug.LogError($"Error while renaming file: {e.Message}");
         }
     }
+
     private void LoadAndDisplayWorlds()
     {
         Transform contentTransform = WorldSelectionPanel.transform.Find("Scroll View/Viewport/Content");
@@ -347,10 +401,18 @@ public class MainMenuManager : MonoBehaviour
         if (loadedWorld != null)
         {
             string filePathToDelete = Path.Combine(World.WorldDirectory, loadedWorld.WorldName + ".json");
+            string metaFilePathToDelete = Path.Combine(World.WorldDirectory, loadedWorld.WorldName + ".json.meta");
+
             if (File.Exists(filePathToDelete))
             {
                 File.Delete(filePathToDelete);
                 Debug.Log($"World '{loadedWorld.WorldName}' deleted.");
+
+                if (File.Exists(metaFilePathToDelete))
+                {
+                    File.Delete(metaFilePathToDelete);
+                    Debug.Log($"Meta file '{loadedWorld.WorldName}.json.meta' deleted.");
+                }
 
                 WorldSelectionPanel.SetActive(true);
                 EditWorldPanel.SetActive(false);
@@ -366,6 +428,7 @@ public class MainMenuManager : MonoBehaviour
             Debug.LogError("Error: loadedWorld is null.");
         }
     }
+
 
 
     #endregion
