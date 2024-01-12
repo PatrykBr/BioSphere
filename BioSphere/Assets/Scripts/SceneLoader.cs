@@ -4,6 +4,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
 using System.Collections;
+
 public enum MenuScreen { MainMenu, Settings, Credits, PlayScreen }
 
 public class MainMenuManager : MonoBehaviour
@@ -17,78 +18,48 @@ public class MainMenuManager : MonoBehaviour
     public GameObject templatePrefab;
 
     // Settings UI
-    private GameObject GeneralMainFrame;
-    private GameObject SoundMainFrame;
+    private GameObject generalSettingsPanel;
+    private GameObject soundSettingsPanel;
 
     // Play Screen UI
-    private GameObject WorldSelectionPanel;
-    private GameObject CreateWorldPanel;
-    private GameObject EditWorldPanel;
+    private GameObject worldSelectionPanel;
+    private GameObject createWorldPanel;
+    private GameObject editWorldPanel;
 
     // Input variables
-    private string input;
-    private float slider = 1;
+    private string worldNameInput;
+    private float difficultySliderValue = 1;
 
     private World loadedWorld;
-
     private MenuScreen currentScreen;
 
     private void Start()
     {
+        // Initialize UI components and show the main menu at the start
         InitializeUI();
         ShowScreen(MenuScreen.MainMenu);
     }
 
     private void InitializeUI()
     {
-        WorldSelectionPanel = playPanel.transform.Find("WorldSelection").gameObject;
-        CreateWorldPanel = playPanel.transform.Find("CreateWorld").gameObject;
-        EditWorldPanel = playPanel.transform.Find("EditWorld").gameObject;
+        // Retrieve references to various UI panels and set initial states
+        worldSelectionPanel = playPanel.transform.Find("WorldSelection").gameObject;
+        createWorldPanel = playPanel.transform.Find("CreateWorld").gameObject;
+        editWorldPanel = playPanel.transform.Find("EditWorld").gameObject;
 
-        CreateWorldPanel.SetActive(false);
-        WorldSelectionPanel.SetActive(false);
-        EditWorldPanel.SetActive(false);
+        createWorldPanel.SetActive(false);
+        worldSelectionPanel.SetActive(false);
+        editWorldPanel.SetActive(false);
 
-        GameObject generalButton = settingsPanel.transform.Find("General").gameObject;
-        GameObject soundButton = settingsPanel.transform.Find("Sound").gameObject;
+        // Set up references for settings buttons and panels
+        GameObject generalSettingsButton = settingsPanel.transform.Find("General").gameObject;
+        GameObject soundSettingsButton = settingsPanel.transform.Find("Sound").gameObject;
 
-        GeneralMainFrame = generalButton.transform.Find("Main").gameObject;
-        SoundMainFrame = soundButton.transform.Find("Main").gameObject;
+        generalSettingsPanel = generalSettingsButton.transform.Find("Main").gameObject;
+        soundSettingsPanel = soundSettingsButton.transform.Find("Main").gameObject;
     }
 
     #region ScreenManagement
-
-    public void ShowMainMenu() => ShowScreen(MenuScreen.MainMenu);
-
-    public void ShowSettings()
-    {
-        ShowScreen(MenuScreen.Settings);
-        SelectGeneralSettings();
-    }
-
-    public void ShowCredits() => ShowScreen(MenuScreen.Credits);
-
-    public void ShowPlayScreen()
-    {
-        ShowScreen(MenuScreen.PlayScreen);
-        LoadAndDisplayWorlds();
-    }
-
-    public void GoBack()
-    {
-        if (CreateOrEditWorldPanelActive())
-        {
-            CreateWorldPanel.SetActive(false);
-            EditWorldPanel.SetActive(false);
-            WorldSelectionPanel.SetActive(true);
-        }
-        else
-        {
-            ShowMainMenu();
-        }
-    }
-
-    private bool CreateOrEditWorldPanelActive() => CreateWorldPanel.activeSelf || EditWorldPanel.activeSelf;
 
     private void ShowScreen(MenuScreen screen)
     {
@@ -121,21 +92,61 @@ public class MainMenuManager : MonoBehaviour
                 break;
             case MenuScreen.PlayScreen:
                 playPanel.SetActive(true);
-                WorldSelectionPanel.SetActive(true);
+                worldSelectionPanel.SetActive(true);
                 break;
         }
     }
+
+    public void ShowMainMenu() => ShowScreen(MenuScreen.MainMenu);
+
+    public void ShowSettings()
+    {
+        // Show the settings screen and select the general settings by default
+        ShowScreen(MenuScreen.Settings);
+        SelectGeneralSettings();
+    }
+
+    public void ShowCredits() => ShowScreen(MenuScreen.Credits);
+
+    public void ShowPlayScreen()
+    {
+        // Show the play screen and load/display available worlds
+        ShowScreen(MenuScreen.PlayScreen);
+        LoadAndDisplayWorlds();
+    }
+
+    public void GoBack()
+    {
+        if (IsCreateOrEditWorldPanelActive())
+        {
+            createWorldPanel.SetActive(false);
+            editWorldPanel.SetActive(false);
+            worldSelectionPanel.SetActive(true);
+        } else if (creatorPanel.activeSelf)
+        {
+            creatorPanel.SetActive(false);
+            playPanel.SetActive(true);
+            worldSelectionPanel.SetActive(true);
+        }
+        else
+        {
+            ShowMainMenu();
+        }
+    }
+
+    private bool IsCreateOrEditWorldPanelActive() => createWorldPanel.activeSelf || editWorldPanel.activeSelf;
 
     #endregion
 
     #region Settings
 
-    public void SelectGeneralSettings() => ActivateSettingsPanel(GeneralMainFrame, SoundMainFrame);
+    public void SelectGeneralSettings() => ActivateSettingsPanel(generalSettingsPanel, soundSettingsPanel);
 
-    public void SelectSoundSettings() => ActivateSettingsPanel(SoundMainFrame, GeneralMainFrame);
+    public void SelectSoundSettings() => ActivateSettingsPanel(soundSettingsPanel, generalSettingsPanel);
 
     private void ActivateSettingsPanel(GameObject activePanel, GameObject inactivePanel)
     {
+        // Activate the selected settings panel and deactivate the other
         activePanel.SetActive(true);
         inactivePanel.SetActive(false);
     }
@@ -146,95 +157,88 @@ public class MainMenuManager : MonoBehaviour
 
     private void ResetCreateWorldPanel()
     {
-        Transform createWorldPanel = CreateWorldPanel.transform;
-
-        // Reset WorldName Text Area
-        TMP_InputField worldNameInputField = createWorldPanel.Find("WorldName").GetComponent<TMP_InputField>();
+        TMP_InputField worldNameInputField = createWorldPanel.transform.Find("WorldName").GetComponent<TMP_InputField>();
         worldNameInputField.text = "";
 
-        // Reset Difficulty Slider
-        Slider difficultySlider = createWorldPanel.Find("Difficulty/Slider").GetComponent<Slider>();
+        Slider difficultySlider = createWorldPanel.transform.Find("Difficulty/Slider").GetComponent<Slider>();
         difficultySlider.value = 1;
     }
-
-
 
     public void OnCreateButtonPressed()
     {
         ResetCreateWorldPanel();
 
-        WorldSelectionPanel.SetActive(false);
-        CreateWorldPanel.SetActive(true);
+        worldSelectionPanel.SetActive(false);
+        createWorldPanel.SetActive(true);
     }
 
-    public void ReadStringInput(string s) => input = s;
+    public void ReadStringInput(string input) => worldNameInput = input;
 
-    public void ShowSliderValue(float f) => slider = f;
+    public void ShowSliderValue(float value) => difficultySliderValue = value;
 
-    private IEnumerator HideErrorText(TextMeshProUGUI ErrorText)
+    private IEnumerator HideErrorText(TextMeshProUGUI errorText)
     {
         yield return new WaitForSeconds(3);
-        ErrorText.gameObject.SetActive(false);
+        errorText.gameObject.SetActive(false);
     }
 
     public void CreateWorld()
     {
-        World writeWorld = new World(
-            input,
-            (slider == 0) ? "Easy" : (slider == 1) ? "Medium" : "Hard"
+        World newWorld = new World(
+            worldNameInput,
+            (difficultySliderValue == 0) ? "Easy" : (difficultySliderValue == 1) ? "Medium" : "Hard"
         )
         {
             Features = new string[] { "Small_Fin" }
         };
-        TextMeshProUGUI ErrorText = CreateWorldPanel.transform.Find("ErrorText").gameObject.GetComponent<TextMeshProUGUI>();
 
-        if (string.IsNullOrEmpty(writeWorld.WorldName))
+        TextMeshProUGUI errorText = createWorldPanel.transform.Find("ErrorText").GetComponent<TextMeshProUGUI>();
+
+        if (string.IsNullOrEmpty(newWorld.WorldName))
         {
-            ErrorText.text = "Error: World name cannot be empty.";
-            ErrorText.gameObject.SetActive(true);
-            StartCoroutine(HideErrorText(ErrorText));
-            return;
+            ShowError(errorText, "Error: World name cannot be empty.");
         }
-
-        if (writeWorld.WorldName.Length > 15)
+        else if (newWorld.WorldName.Length > 15)
         {
-            ErrorText.text = "Error: World name cannot be longer than 15 characters.";
-            ErrorText.gameObject.SetActive(true);
-            StartCoroutine(HideErrorText(ErrorText));
-            return;
+            ShowError(errorText, "Error: World name cannot be longer than 15 characters.");
         }
-
-        if (writeWorld.WorldName.Length < 2)
+        else if (newWorld.WorldName.Length < 2)
         {
-            ErrorText.text = "Error: World name cannot be less than 2 characters.";
-            ErrorText.gameObject.SetActive(true);
-            StartCoroutine(HideErrorText(ErrorText));
-            return;
+            ShowError(errorText, "Error: World name cannot be less than 2 characters.");
         }
+        else
+        {
+            World.WriteWorldJSON(newWorld);
 
-        World.WriteWorldJSON(writeWorld);
-
-        CreateWorldPanel.SetActive(false);
-        LoadAndDisplayWorlds();
-        WorldSelectionPanel.SetActive(true);
+            createWorldPanel.SetActive(false);
+            LoadAndDisplayWorlds();
+            worldSelectionPanel.SetActive(true);
+        }
     }
 
-    private void EditTemplate(World loadedWorld)
+    private void ShowError(TextMeshProUGUI errorText, string errorMessage)
     {
-        string oldWorldName = loadedWorld.WorldName;
+        errorText.text = errorMessage;
+        errorText.gameObject.SetActive(true);
+        StartCoroutine(HideErrorText(errorText));
+    }
 
-        loadedWorld.WorldName = input;
-        loadedWorld.WorldDifficulty = (slider == 0) ? "Easy" : (slider == 1) ? "Medium" : "Hard";
+    private void EditTemplate(World world)
+    {
+        string oldWorldName = world.WorldName;
 
-        if (oldWorldName != null && loadedWorld != null && oldWorldName != loadedWorld.WorldName)
+        world.WorldName = worldNameInput;
+        world.WorldDifficulty = (difficultySliderValue == 0) ? "Easy" : (difficultySliderValue == 1) ? "Medium" : "Hard";
+
+        if (oldWorldName != null && world != null && oldWorldName != world.WorldName)
         {
-            RenameWorldFile(oldWorldName, loadedWorld.WorldName);
+            RenameWorldFile(oldWorldName, world.WorldName);
         }
 
-        World.WriteWorldJSON(loadedWorld);
+        World.WriteWorldJSON(world);
 
-        WorldSelectionPanel.SetActive(true);
-        EditWorldPanel.SetActive(false);
+        worldSelectionPanel.SetActive(true);
+        editWorldPanel.SetActive(false);
         LoadAndDisplayWorlds();
     }
 
@@ -276,9 +280,10 @@ public class MainMenuManager : MonoBehaviour
 
     private void LoadAndDisplayWorlds()
     {
-        Transform contentTransform = WorldSelectionPanel.transform.Find("Scroll View/Viewport/Content");
+        Transform contentTransform = worldSelectionPanel.transform.Find("Scroll View/Viewport/Content");
 
         ClearWorldEntries(contentTransform);
+        Debug.Log(World.WorldDirectory);
 
         string[] jsonFiles = Directory.GetFiles(World.WorldDirectory, "*.json");
 
@@ -314,27 +319,27 @@ public class MainMenuManager : MonoBehaviour
 
     private void LoadSettings(string worldName)
     {
-        GameObject confirmationScreen = EditWorldPanel.transform.Find("Confirmation").gameObject;
+        GameObject confirmationScreen = editWorldPanel.transform.Find("Confirmation").gameObject;
 
         loadedWorld = World.ReadWorldJSON(worldName);
         int difficultyValue = GetDifficultyValue(loadedWorld.WorldDifficulty);
 
         SetEditWorldUI(loadedWorld.WorldName, difficultyValue);
 
-        Button saveEditButton = EditWorldPanel.transform.Find("EditScreen/SaveEdit").GetComponent<Button>();
+        Button saveEditButton = editWorldPanel.transform.Find("EditScreen/SaveEdit").GetComponent<Button>();
         saveEditButton.onClick.RemoveAllListeners();
         saveEditButton.onClick.AddListener(() => EditTemplate(loadedWorld));
 
-        WorldSelectionPanel.SetActive(false);
+        worldSelectionPanel.SetActive(false);
         confirmationScreen.SetActive(false);
-        EditWorldPanel.SetActive(true);
-        EditWorldPanel.transform.Find("EditScreen").gameObject.SetActive(true);
+        editWorldPanel.SetActive(true);
+        editWorldPanel.transform.Find("EditScreen").gameObject.SetActive(true);
     }
 
     private void SetEditWorldUI(string worldName, int difficultyValue)
     {
-        EditWorldPanel.transform.Find("EditScreen/WorldName").GetComponent<TMP_InputField>().text = worldName;
-        EditWorldPanel.transform.Find("EditScreen/Difficulty/Slider").GetComponent<Slider>().value = difficultyValue;
+        editWorldPanel.transform.Find("EditScreen/WorldName").GetComponent<TMP_InputField>().text = worldName;
+        editWorldPanel.transform.Find("EditScreen/Difficulty/Slider").GetComponent<Slider>().value = difficultyValue;
     }
 
     private int GetDifficultyValue(string difficulty)
@@ -361,6 +366,9 @@ public class MainMenuManager : MonoBehaviour
             $"Features: {loadedWorld.Features}");
 
         FeatureFinder.PrintFeatureInfo(loadedWorld);
+
+        creatorPanel.SetActive(true);
+        playPanel.SetActive(false);
     }
 
     public void ShowConfirmationScreen()
@@ -386,13 +394,13 @@ public class MainMenuManager : MonoBehaviour
 
     private void TogglePanel(string panelName, bool isActive)
     {
-        GameObject panel = EditWorldPanel.transform.Find(panelName).gameObject;
+        GameObject panel = editWorldPanel.transform.Find(panelName).gameObject;
         panel.SetActive(isActive);
     }
 
     private void SetConfirmationText(string text)
     {
-        TextMeshProUGUI confirmationText = EditWorldPanel.transform.Find("Confirmation/Text").GetComponent<TextMeshProUGUI>();
+        TextMeshProUGUI confirmationText = editWorldPanel.transform.Find("Confirmation/Text").GetComponent<TextMeshProUGUI>();
         confirmationText.text = text;
     }
 
@@ -414,8 +422,8 @@ public class MainMenuManager : MonoBehaviour
                     Debug.Log($"Meta file '{loadedWorld.WorldName}.json.meta' deleted.");
                 }
 
-                WorldSelectionPanel.SetActive(true);
-                EditWorldPanel.SetActive(false);
+                worldSelectionPanel.SetActive(true);
+                editWorldPanel.SetActive(false);
                 LoadAndDisplayWorlds();
             }
             else
@@ -429,10 +437,9 @@ public class MainMenuManager : MonoBehaviour
         }
     }
 
-
-
     #endregion
 
+    // Method to quit the game
     public void QuitGame()
     {
         Application.Quit();

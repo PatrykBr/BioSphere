@@ -11,7 +11,10 @@ public class World
     public float TimePlayed;
     public string[] Features;
 
-    public static string WorldDirectory = Application.dataPath + "/Worlds/";
+    public static string WorldDirectory = Path.Combine(Application.dataPath, "Resources", "Worlds");
+
+
+    //public static string WorldDirectory = Directory.GetCurrentDirectory() + "\\Assets\\Resources\\Worlds\\";
 
     public World(string name, string difficulty)
     {
