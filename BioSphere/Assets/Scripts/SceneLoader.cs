@@ -283,7 +283,6 @@ public class MainMenuManager : MonoBehaviour
         Transform contentTransform = worldSelectionPanel.transform.Find("Scroll View/Viewport/Content");
 
         ClearWorldEntries(contentTransform);
-        Debug.Log(World.WorldDirectory);
 
         string[] jsonFiles = Directory.GetFiles(World.WorldDirectory, "*.json");
 
@@ -409,6 +408,7 @@ public class MainMenuManager : MonoBehaviour
         if (loadedWorld != null)
         {
             string filePathToDelete = Path.Combine(World.WorldDirectory, loadedWorld.WorldName + ".json");
+
             string metaFilePathToDelete = Path.Combine(World.WorldDirectory, loadedWorld.WorldName + ".json.meta");
 
             if (File.Exists(filePathToDelete))

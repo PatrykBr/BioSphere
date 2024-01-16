@@ -11,11 +11,8 @@ public class World
     public float TimePlayed;
     public string[] Features;
 
-    public static string WorldDirectory = Path.Combine(Application.dataPath, "Resources", "Worlds");
-
-
-    //public static string WorldDirectory = Directory.GetCurrentDirectory() + "\\Assets\\Resources\\Worlds\\";
-
+    public static string WorldDirectory = Path.Combine(Application.persistentDataPath, "Worlds");
+    // C:/Users/Patryk/AppData/LocalLow/DefaultCompany/BioSphere\Worlds
     public World(string name, string difficulty)
     {
         WorldName = name;
@@ -27,14 +24,14 @@ public class World
 
     public static World ReadWorldJSON(string name)
     {
-        string jsonString = File.ReadAllText(WorldDirectory + name + ".json");
+        string jsonString = File.ReadAllText(Path.Combine(WorldDirectory, name + ".json"));
         return JsonUtility.FromJson<World>(jsonString);
     }
 
     public static void WriteWorldJSON(World world)
     {
         string jsonString = JsonUtility.ToJson(world);
-        string filePath = WorldDirectory + world.WorldName + ".json";
+        string filePath = Path.Combine(WorldDirectory, world.WorldName + ".json");
         File.WriteAllText(filePath, jsonString);
     }
 }
