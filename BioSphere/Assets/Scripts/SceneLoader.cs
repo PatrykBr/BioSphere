@@ -4,6 +4,8 @@ using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
 using System.Collections;
+using System.Collections.Generic;
+using Unity.Collections.LowLevel.Unsafe;
 
 public enum MenuScreen { MainMenu, Settings, Credits, PlayScreen }
 
@@ -16,6 +18,7 @@ public class MainMenuManager : MonoBehaviour
     public GameObject playPanel;
     public GameObject creatorPanel;
     public GameObject templatePrefab;
+    public GameObject FeaturetemplatePrefab;
 
     // Settings UI
     private GameObject generalSettingsPanel;
@@ -31,7 +34,6 @@ public class MainMenuManager : MonoBehaviour
     private float difficultySliderValue = 1;
 
     private World loadedWorld;
-    private MenuScreen currentScreen;
 
     private void Start()
     {
@@ -63,7 +65,6 @@ public class MainMenuManager : MonoBehaviour
 
     private void ShowScreen(MenuScreen screen)
     {
-        currentScreen = screen;
         DisableAllPanels();
         EnableSelectedPanel(screen);
     }
@@ -122,7 +123,8 @@ public class MainMenuManager : MonoBehaviour
             createWorldPanel.SetActive(false);
             editWorldPanel.SetActive(false);
             worldSelectionPanel.SetActive(true);
-        } else if (creatorPanel.activeSelf)
+        }
+        else if (creatorPanel.activeSelf)
         {
             creatorPanel.SetActive(false);
             playPanel.SetActive(true);
@@ -189,7 +191,7 @@ public class MainMenuManager : MonoBehaviour
             (difficultySliderValue == 0) ? "Easy" : (difficultySliderValue == 1) ? "Medium" : "Hard"
         )
         {
-            Features = new string[] { "Small_Fin" }
+            Features = new string[] { "Small_Fins", "Small_Body", "Small_Eyes" }
         };
 
         TextMeshProUGUI errorText = createWorldPanel.transform.Find("ErrorText").GetComponent<TextMeshProUGUI>();
@@ -359,16 +361,87 @@ public class MainMenuManager : MonoBehaviour
     private void LoadWorld(string worldName)
     {
         World loadedWorld = World.ReadWorldJSON(worldName);
-        Debug.Log($"World Name: {loadedWorld.WorldName}, " +
-            $"World Difficulty: {loadedWorld.WorldDifficulty}, " +
-            $"TimesDied: {loadedWorld.TimesDied}, " +
-            $"Features: {loadedWorld.Features}");
+        ClearWorldEntries(creatorPanel.transform.Find("Scroll View/Viewport/Content"));
 
-        FeatureFinder.PrintFeatureInfo(loadedWorld);
+        List<Feature> features = FeatureFinder.GetFeatures(loadedWorld);
+        CreateFeatures(features);
+
+        CalculateAndDisplayStats(loadedWorld);
 
         creatorPanel.SetActive(true);
         playPanel.SetActive(false);
     }
+
+    private void CreateFeatures(List<Feature> features)
+    {
+        Transform contentTransform = creatorPanel.transform.Find("Scroll View/Viewport/Content");
+        foreach (Feature feature in features)
+        {
+            GameObject newFeature = Instantiate(FeaturetemplatePrefab, contentTransform);
+            newFeature.name = feature.name;
+            TextMeshProUGUI textMeshPro = newFeature.transform.Find("FeatureName").GetComponent<TextMeshProUGUI>();
+            textMeshPro.text = feature.name.Replace("_", " ");
+        }
+    }
+
+    private void CalculateAndDisplayStats(World world)
+    {
+        int totalHealth = 0;
+        int totalSpeed = 0;
+        int totalStrength = 0;
+
+        foreach (string selectedFeature in world.SelectedFeatures)
+        {
+            Feature feature = FeatureFinder.FindFeatureInItems(selectedFeature);
+            if (feature != null)
+            {
+                totalHealth += feature.stat.health;
+                totalSpeed += feature.stat.speed;
+                totalStrength += feature.stat.strength;
+            }
+            else
+            {
+                Debug.Log("Could not find feature with name " + selectedFeature);
+                continue;
+            }
+        }
+
+        UpdateStatsUI(totalHealth, totalSpeed, totalStrength);
+    }
+
+    private void UpdateStatsUI(int health, int speed, int strength)
+    {
+        Transform statsFrame = creatorPanel.transform.Find("Stats");
+        TextMeshProUGUI healthTxt = statsFrame.transform.Find("Health/TxtVal").GetComponent<TextMeshProUGUI>();
+        TextMeshProUGUI speedTxt = statsFrame.transform.Find("Speed/TxtVal").GetComponent<TextMeshProUGUI>();
+        TextMeshProUGUI strengthTxt = statsFrame.transform.Find("Strength/TxtVal").GetComponent<TextMeshProUGUI>();
+
+        healthTxt.text = health.ToString();
+        speedTxt.text = speed.ToString();
+        strengthTxt.text = strength.ToString();
+
+        UpdateTextColor(healthTxt, health);
+        UpdateTextColor(speedTxt, speed);
+        UpdateTextColor(strengthTxt, strength);
+    }
+
+    private void UpdateTextColor(TextMeshProUGUI text, int value)
+    {
+        if (value >= 0 && value <= 5)
+        {
+            text.color = Color.red;
+        }
+        else if (value >= 6 && value <= 15)
+        {
+            text.color = new Color(1, 0.5f, 0);
+        }
+        else if (value >= 16)
+        {
+            text.color = Color.green;
+        }
+    }
+
+
 
     public void ShowConfirmationScreen()
     {

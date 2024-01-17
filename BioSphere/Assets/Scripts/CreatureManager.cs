@@ -5,8 +5,9 @@ using System.IO;
 [System.Serializable]
 public class Stat
 {
-    public int vision;
+    public int health;
     public int speed;
+    public int strength;
 }
 
 [System.Serializable]
@@ -40,20 +41,17 @@ public static class FeatureFinder
         return null;
     }
 
-
-    public static void PrintFeatureInfo(World world)
+    public static List<Feature> GetFeatures(World world)
     {
+        List<Feature> features = new List<Feature>();
         foreach (string featureName in world.Features)
         {
             Feature feature = FindFeatureInItems(featureName);
             if (feature != null)
             {
-                Debug.Log($"Feature Name: {feature.name}, Stat: {JsonUtility.ToJson(feature.stat)}, Sprite: {feature.sprite}");
-            }
-            else
-            {
-                Debug.Log($"Feature {featureName} not found in items.json");
+                features.Add(feature);
             }
         }
+        return features;
     }
 }

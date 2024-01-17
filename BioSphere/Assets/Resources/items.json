@@ -1,24 +1,32 @@
 {
     "creatureFeatures": [
         {
+            "name": "Small_Eyes",
+            "stat": {
+                "health": 10
+            },
+            "sprite": "small_eyes.png"
+        },
+        {
             "name": "Big_Eyes",
             "stat": {
-                "vision": 10
+                "health": 10
             },
             "sprite": "big_eyes.png"
         },
         {
             "name": "Small_Body",
             "stat": {
-                "speed": 15
+                "speed": 15,
+                "strength": 2
             },
             "sprite": "small_body.png"
         },
         {
-            "name": "Small_Fin",
+            "name": "Small_Fins",
             "stat": {
                 "speed": 10,
-                "vision": 5
+                "health": 5
             },
             "sprite": "small_fins.png"
         }

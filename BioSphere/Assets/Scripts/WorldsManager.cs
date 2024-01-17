@@ -10,6 +10,7 @@ public class World
     public int TimesDied;
     public float TimePlayed;
     public string[] Features;
+    public string[] SelectedFeatures;
 
     public static string WorldDirectory = Path.Combine(Application.persistentDataPath, "Worlds");
     // C:/Users/Patryk/AppData/LocalLow/DefaultCompany/BioSphere\Worlds
@@ -20,6 +21,7 @@ public class World
         TimesDied = 0;
         TimePlayed = 0f;
         Features = new string[0];
+        SelectedFeatures = new string[] { "Small_Fins", "Small_Body", "Small_Eyes" };
     }
 
     public static World ReadWorldJSON(string name)
