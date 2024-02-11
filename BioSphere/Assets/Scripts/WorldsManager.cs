@@ -1,10 +1,9 @@
-using UnityEngine;
 using System.IO;
-using System;
-using System.Collections.Generic;
+using UnityEngine;
 
 public class World
 {
+    // Properties to store world information
     public string WorldName;
     public string WorldDifficulty;
     public int TimesDied;
@@ -12,8 +11,12 @@ public class World
     public string[] Features;
     public string[] SelectedFeatures;
 
+    // Directory where world data will be stored
     public static string WorldDirectory = Path.Combine(Application.persistentDataPath, "Worlds");
-    // C:/Users/Patryk/AppData/LocalLow/DefaultCompany/BioSphere\Worlds
+    // C:/Users/Patryk/AppData/LocalLow/DefaultCompany/BioSphere/Worlds
+    // C:\Users\patbr\AppData\LocalLow\DefaultCompany\BioSphere\Worlds
+
+    // Constructor for creating a new World instance
     public World(string name, string difficulty)
     {
         WorldName = name;
@@ -21,15 +24,22 @@ public class World
         TimesDied = 0;
         TimePlayed = 0f;
         Features = new string[0];
-        SelectedFeatures = new string[] { "Small_Fins", "Small_Body", "Small_Eyes" };
+        SelectedFeatures = new string[]
+        {
+            "Small_Fins",
+            "Small_Body",
+            "Small_Eyes"
+        }; // Default selected features
     }
 
+    // Read world data from a JSON file
     public static World ReadWorldJSON(string name)
     {
         string jsonString = File.ReadAllText(Path.Combine(WorldDirectory, name + ".json"));
         return JsonUtility.FromJson<World>(jsonString);
     }
 
+    // Write world data to a JSON file
     public static void WriteWorldJSON(World world)
     {
         string jsonString = JsonUtility.ToJson(world);

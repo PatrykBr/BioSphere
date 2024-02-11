@@ -23,6 +23,22 @@
             "sprite": "small_body.png"
         },
         {
+            "name": "Medium_Body",
+            "stat": {
+                "speed": 15,
+                "strength": 2
+            },
+            "sprite": "small_body.png"
+        },
+        {
+            "name": "Big_Body",
+            "stat": {
+                "speed": 15,
+                "strength": 2
+            },
+            "sprite": "small_body.png"
+        },
+        {
             "name": "Small_Fins",
             "stat": {
                 "speed": 10,
