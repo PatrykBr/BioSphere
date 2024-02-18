@@ -22,7 +22,7 @@ public class World
         WorldName = name;
         WorldDifficulty = difficulty;
         TimesDied = 0;
-        TimePlayed = 0f;
+        TimePlayed = 0f;    
         Features = new string[0];
         SelectedFeatures = new string[]
         {

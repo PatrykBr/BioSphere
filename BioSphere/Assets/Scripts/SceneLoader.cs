@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using TMPro;
+using Unity.Collections.LowLevel.Unsafe;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -30,9 +31,9 @@ public class MainMenuManager : MonoBehaviour
 
     // Variables to store user inputs for world creation/editing
     private string worldNameInput;
-    private float difficultySliderValue = 1;
+    private int difficultySliderValue = 1;
 
-    // Object representing a loaded world
+    // Object representing the loaded world
     private World loadedWorld;
 
     // Initialize UI elements and set the main menu as the initial screen
@@ -89,6 +90,7 @@ public class MainMenuManager : MonoBehaviour
                 break;
             case MenuScreen.Settings:
                 settingsPanel.SetActive(true);
+                SelectGeneralSettings();
                 break;
             case MenuScreen.Credits:
                 creditsPanel.SetActive(true);
@@ -96,23 +98,15 @@ public class MainMenuManager : MonoBehaviour
             case MenuScreen.PlayScreen:
                 playPanel.SetActive(true);
                 worldSelectionPanel.SetActive(true);
+                LoadAndDisplayWorlds();
                 break;
         }
     }
-
     // Methods to show different screens
     public void ShowMainMenu() => ShowScreen(MenuScreen.MainMenu);
-    public void ShowSettings()
-    {
-        ShowScreen(MenuScreen.Settings);
-        SelectGeneralSettings();
-    }
+    public void ShowSettings() => ShowScreen(MenuScreen.Settings);
     public void ShowCredits() => ShowScreen(MenuScreen.Credits);
-    public void ShowPlayScreen()
-    {
-        ShowScreen(MenuScreen.PlayScreen);
-        LoadAndDisplayWorlds();
-    }
+    public void ShowPlayScreen() => ShowScreen(MenuScreen.PlayScreen);
     public void GoBack()
     {
         if (IsCreateOrEditWorldPanelActive())
@@ -180,7 +174,42 @@ public class MainMenuManager : MonoBehaviour
     public void ReadStringInput(string input) => worldNameInput = input;
 
     // Display the value of the difficulty slider
-    public void ShowSliderValue(float value) => difficultySliderValue = value;
+    public void ShowSliderValue(int value) => difficultySliderValue = value;
+
+    // Validates a proposed world name, ensuring it meets specific criteria.
+    private bool ValidateWorldName(TextMeshProUGUI errorText, string newName)
+    {
+        var worldPath = Path.Combine(World.WorldDirectory, newName + ".json");
+
+        // Check if world name already exits
+        if (File.Exists(worldPath))
+        {
+            ShowError(errorText, "Error: World name already exists.");
+            return false;
+        }
+
+        // Check for empty name:
+        if (string.IsNullOrEmpty(newName))
+        {
+            ShowError(errorText, "Error: World name cannot be empty.");
+            return false;
+        }
+
+        // Enforce length restrictions (2-15 characters):
+        else if (newName.Length > 15)
+        {
+            ShowError(errorText, "Error: World name cannot be longer than 15 characters.");
+            return false;
+        }
+        else if (newName.Length < 2)
+        {
+            ShowError(errorText, "Error: World name cannot be less than 2 characters.");
+            return false;
+        }
+
+        // Name meets criteria:
+        return true;
+    }
 
     // Coroutine to hide error text after a specified time
     private IEnumerator HideErrorText(TextMeshProUGUI errorText)
@@ -204,29 +233,20 @@ public class MainMenuManager : MonoBehaviour
         // Get reference to error text UI element
         TextMeshProUGUI errorText = createWorldPanel.transform.Find("ErrorText").GetComponent<TextMeshProUGUI>();
 
-        // Validate world name and display appropriate error messages
-        if (string.IsNullOrEmpty(newWorld.WorldName))
+        // Validate the new name:
+        if (!ValidateWorldName(errorText, newWorld.WorldName))
         {
-            ShowError(errorText, "Error: World name cannot be empty.");
+            return; // Exit if validation fails
         }
-        else if (newWorld.WorldName.Length > 15)
-        {
-            ShowError(errorText, "Error: World name cannot be longer than 15 characters.");
-        }
-        else if (newWorld.WorldName.Length < 2)
-        {
-            ShowError(errorText, "Error: World name cannot be less than 2 characters.");
-        }
-        else
-        {
-            // Save the new world to a JSON file
-            World.WriteWorldJSON(newWorld);
 
-            // Hide create world panel, reload and display worlds, and show world selection panel
-            createWorldPanel.SetActive(false);
-            LoadAndDisplayWorlds();
-            worldSelectionPanel.SetActive(true);
-        }
+        // Save the new world to a JSON file
+        World.WriteWorldJSON(newWorld);
+
+        // Hide create world panel, reload and display worlds, and show world selection panel
+        createWorldPanel.SetActive(false);
+        LoadAndDisplayWorlds();
+        worldSelectionPanel.SetActive(true);
+
     }
 
     // Display error message and hide it after a specified time
@@ -237,82 +257,86 @@ public class MainMenuManager : MonoBehaviour
         StartCoroutine(HideErrorText(errorText));
     }
 
-    // Edit the properties of a world template
-    private void EditTemplate(World world)
+    // Returns the text values from the difficulty
+    private string GetDifficultyString(int difficultyValue)
     {
-        string oldWorldName = world.WorldName;
-
-        world.WorldName = worldNameInput;
-        world.WorldDifficulty = (difficultySliderValue == 0) ? "Easy" : (difficultySliderValue == 1) ? "Medium" : "Hard";
-
-        // Rename world file if necessary
-        if (oldWorldName != null && world != null && oldWorldName != world.WorldName)
+        switch (difficultyValue)
         {
-            // Get reference to error text UI element
-            TextMeshProUGUI errorText = editWorldPanel.transform.Find("EditScreen/ErrorText").GetComponent<TextMeshProUGUI>();
-
-            Debug.Log(world.WorldName.Length);
-
-            if (string.IsNullOrEmpty(world.WorldName))
-            {
-                ShowError(errorText, "Error: World name cannot be empty.");
-            }
-            else if (world.WorldName.Length > 15)
-            {
-                ShowError(errorText, "Error: World name cannot be longer than 15 characters.");
-            }
-            else if (world.WorldName.Length < 2)
-            {
-                ShowError(errorText, "Error: World name cannot be less than 2 characters.");
-            }
-            else
-            {
-
-                RenameWorldFile(oldWorldName, world.WorldName);
-
-                // Write the updated world data to a JSON file
-                World.WriteWorldJSON(world);
-
-                // Show world selection panel, hide edit world panel, and reload worlds
-                worldSelectionPanel.SetActive(true);
-                editWorldPanel.SetActive(false);
-                LoadAndDisplayWorlds();
-            }
-            }
-
-
+            case 0:
+                return "Easy";
+            case 1:
+                return "Medium";
+            case 2:
+                return "Hard";
+            default:
+                return "Medium"; // Default fallback
+        }
     }
 
-    // Rename the world JSON file
+    // Handles editing a World object based on user input.
+    private void EditTemplate(World world)
+    {
+        string oldWorldName = world.WorldName;  // Store original name for potential file renaming
+        TextMeshProUGUI errorText = editWorldPanel.transform.Find("EditScreen/ErrorText").GetComponent<TextMeshProUGUI>();
+
+        // Update world name if input differs from original:
+        if (worldNameInput != null && worldNameInput != oldWorldName)
+        {
+            if (!ValidateWorldName(errorText, worldNameInput))
+            {
+                return; // Exit if validation fails
+            }
+            world.WorldName = worldNameInput;
+
+            // Rename the world file on disk to reflect the new name:
+            RenameWorldFile(oldWorldName, worldNameInput);
+        }
+
+        // Update world difficulty based on slider value:
+        world.WorldDifficulty = GetDifficultyString(difficultySliderValue);
+
+        // Persist world changes to JSON file:
+        World.WriteWorldJSON(world);
+
+        // Navigate to world selection screen:
+        worldSelectionPanel.SetActive(true);
+        editWorldPanel.SetActive(false);
+        LoadAndDisplayWorlds();
+    }
+
+
+    // Renames the world JSON file, ensuring proper error handling and logging.
     private void RenameWorldFile(string oldName, string newName)
     {
-        string oldFilePath = Path.Combine(World.WorldDirectory, oldName + ".json");
-        string newFilePath = Path.Combine(World.WorldDirectory, newName + ".json");
+        try
+        {
+            // Construct file paths using Path.Combine for consistency and clarity.
+            var oldPath = Path.Combine(World.WorldDirectory, oldName + ".json");
+            var newPath = Path.Combine(World.WorldDirectory, newName + ".json");
 
-            // Check if old file exists and new file doesn't exist, then rename the files
-            if (!File.Exists(oldFilePath))
+            // Validate file existence:
+            if (!File.Exists(oldPath))
             {
-                Debug.LogError($"Error: File {oldFilePath} not found.");
-                return;
-            }
-
-            if (File.Exists(newFilePath))
-            {
-                Debug.LogError($"Error: File {newFilePath} already exists.");
-                return;
+                throw new FileNotFoundException($"File '{oldPath}' not found.");
             }
 
-            try
+            // Prevent accidental overwrites:
+            if (File.Exists(newPath))
             {
-                // Rename the world JSON file
-                File.Move(oldFilePath, newFilePath);
-                Debug.Log($"Successfully renamed file from {oldName} to {newName}");
+                throw new IOException($"File '{newPath}' already exists.");
             }
-            catch (Exception e)
-            {
-                Debug.LogError($"Error while renaming file: {e.Message}");
-            }
-        
+
+            // Perform the renaming operation:
+            File.Move(oldPath, newPath);
+
+            // Log success for tracking and debugging:
+            Debug.Log($"Successfully renamed file from '{oldName}' to '{newName}'.");
+        }
+        catch (Exception e)
+        {
+            // Log errors for troubleshooting:
+            Debug.LogError($"Error renaming world file: {e.Message}");
+        }
     }
 
     // Load and display available worlds
@@ -363,14 +387,13 @@ public class MainMenuManager : MonoBehaviour
     private void LoadSettings(string worldName)
     {
         GameObject confirmationScreen = editWorldPanel.transform.Find("Confirmation").gameObject;
-
+        Button saveEditButton = editWorldPanel.transform.Find("EditScreen/SaveEdit").GetComponent<Button>();
         loadedWorld = World.ReadWorldJSON(worldName);
         int difficultyValue = GetDifficultyValue(loadedWorld.WorldDifficulty);
 
         // Set UI elements for editing the world
         SetEditWorldUI(loadedWorld.WorldName, difficultyValue);
 
-        Button saveEditButton = editWorldPanel.transform.Find("EditScreen/SaveEdit").GetComponent<Button>();
         saveEditButton.onClick.RemoveAllListeners();
         saveEditButton.onClick.AddListener(() => EditTemplate(loadedWorld));
 
@@ -399,7 +422,53 @@ public class MainMenuManager : MonoBehaviour
             case "Hard":
                 return 2;
             default:
-                return -1;
+                return 1;
+        }
+    }
+
+    // Show confirmation screen for world deletion
+    public void ShowConfirmationScreen()
+    {
+        GameObject EditScreen = editWorldPanel.transform.Find("EditScreen").gameObject;
+        GameObject ConfirmationScreen = editWorldPanel.transform.Find("Confirmation").gameObject;
+        EditScreen.SetActive(false);
+        ConfirmationScreen.SetActive(true);
+
+        TextMeshProUGUI confirmationText = ConfirmationScreen.transform.Find("Text").GetComponent<TextMeshProUGUI>();
+        confirmationText.text = $"Are you sure you would like to delete \"{loadedWorld.WorldName}\"?";
+    }
+
+    // Deletes the selected world file
+    public void DeleteWorld()
+    {
+        // Ensure a world is loaded before attempting deletion.
+        if (loadedWorld == null)
+        {
+            Debug.LogError("Error: Cannot delete world, loadedWorld is null.");
+            return;
+        }
+
+        string filePathToDelete = Path.Combine(World.WorldDirectory, loadedWorld.WorldName + ".json");
+
+        // Verify that the file exists before attempting deletion.
+        if (!File.Exists(filePathToDelete))
+        {
+            Debug.LogError($"Error: File '{filePathToDelete}' not found.");
+            return;
+        }
+
+        try
+        {
+            File.Delete(filePathToDelete);
+            Debug.Log($"World '{loadedWorld.WorldName}' deleted.");
+
+            worldSelectionPanel.SetActive(true);
+            editWorldPanel.SetActive(false);
+            LoadAndDisplayWorlds();
+        }
+        catch (Exception ex)
+        {
+            Debug.LogError($"Error deleting world file: {ex.Message}");
         }
     }
 
@@ -491,84 +560,11 @@ public class MainMenuManager : MonoBehaviour
         }
     }
 
-    // Show confirmation screen for world deletion
-    public void ShowConfirmationScreen()
-    {
-        TogglePanel("EditScreen", false);
-        TogglePanel("Confirmation", true);
-
-        SetConfirmationText($"Are you sure you would like to delete \"{loadedWorld.WorldName}\"?");
-    }
-
-    // Handle confirmation button click
-    public void HandleConfirmationButtonClick(bool isDeleteConfirmed)
-    {
-        if (isDeleteConfirmed)
-        {
-            DeleteWorld();
-        }
-        else
-        {
-            TogglePanel("Confirmation", false);
-            TogglePanel("EditScreen", true);
-        }
-    }
-
-    // Toggle the visibility of a panel
-    private void TogglePanel(string panelName, bool isActive)
-    {
-        GameObject panel = editWorldPanel.transform.Find(panelName).gameObject;
-        panel.SetActive(isActive);
-    }
-
-    // Set text for confirmation dialog
-    private void SetConfirmationText(string text)
-    {
-        TextMeshProUGUI confirmationText = editWorldPanel.transform.Find("Confirmation/Text").GetComponent<TextMeshProUGUI>();
-        confirmationText.text = text;
-    }
-
-    // Delete the selected world
-    private void DeleteWorld()
-    {
-        if (loadedWorld != null)
-        {
-            string filePathToDelete = Path.Combine(World.WorldDirectory, loadedWorld.WorldName + ".json");
-
-            string metaFilePathToDelete = Path.Combine(World.WorldDirectory, loadedWorld.WorldName + ".json.meta");
-
-            if (File.Exists(filePathToDelete))
-            {
-                File.Delete(filePathToDelete);
-                Debug.Log($"World '{loadedWorld.WorldName}' deleted.");
-
-                if (File.Exists(metaFilePathToDelete))
-                {
-                    File.Delete(metaFilePathToDelete);
-                    Debug.Log($"Meta file '{loadedWorld.WorldName}.json.meta' deleted.");
-                }
-
-                worldSelectionPanel.SetActive(true);
-                editWorldPanel.SetActive(false);
-                LoadAndDisplayWorlds();
-            }
-            else
-            {
-                Debug.LogError($"Error: File '{filePathToDelete}' not found.");
-            }
-        }
-        else
-        {
-            Debug.LogError("Error: loadedWorld is null.");
-        }
-    }
-
     #endregion
 
-    // Quit the application
+    // Quit the game
     public void QuitGame()
     {
         Application.Quit();
-        Debug.Log("Quit");
     }
 }
