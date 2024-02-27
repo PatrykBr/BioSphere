@@ -6,6 +6,7 @@ using TMPro;
 using Unity.Collections.LowLevel.Unsafe;
 using UnityEngine;
 using UnityEngine.UI;
+using UnityEngine.WSA;
 
 public enum MenuScreen { MainMenu, Settings, Credits, PlayScreen }
 
@@ -19,6 +20,7 @@ public class MainMenuManager : MonoBehaviour
     public GameObject creatorPanel;
     public GameObject templatePrefab;
     public GameObject FeaturetemplatePrefab;
+    public GameObject FeatureModels;
 
     // References to various settings panels
     private GameObject generalSettingsPanel;
@@ -491,14 +493,89 @@ public class MainMenuManager : MonoBehaviour
     private void CreateFeatures(List<Feature> features)
     {
         Transform contentTransform = creatorPanel.transform.Find("Scroll View/Viewport/Content");
+
+        // Load all GameObjects from the "FeatureModels" folder
+        GameObject[] featureObjects = Resources.LoadAll<GameObject>("FeatureModels");
+
         foreach (Feature feature in features)
         {
-            GameObject newFeature = Instantiate(FeaturetemplatePrefab, contentTransform);
-            newFeature.name = feature.name;
-            TextMeshProUGUI textMeshPro = newFeature.transform.Find("FeatureName").GetComponent<TextMeshProUGUI>();
-            textMeshPro.text = feature.name.Replace("_", " ");
+            foreach (GameObject obj in featureObjects)
+            {
+                if (obj.name == feature.name)
+                {
+                    GameObject newFeature = Instantiate(FeaturetemplatePrefab, contentTransform);
+                    newFeature.name = feature.name;
+                    TextMeshProUGUI textMeshPro = newFeature.transform.Find("FeatureName").GetComponent<TextMeshProUGUI>();
+                    textMeshPro.text = feature.name.Replace("_", " ");
+                    RawImage rawImage = newFeature.transform.Find("FeatureIcon").GetComponent<RawImage>();
+
+                    // Render the 3D object to a texture
+                    RenderTexture renderTexture = Render3DObjectToTexture(obj);
+
+                    // Display the rendered texture in the UI RawImage
+                    if (renderTexture != null)
+                    {
+                        Debug.Log(renderTexture);
+                        rawImage.texture = renderTexture;
+                    }
+
+                    break; // Stop searching once the object is found
+                }
+            }
         }
     }
+
+    // Function to render 3D object to texture
+    private RenderTexture Render3DObjectToTexture(GameObject obj)
+    {
+        // Create a RenderTexture with the dimensions of the RawImage
+        RenderTexture renderTexture = new RenderTexture(Screen.width, Screen.height, 24);
+
+        // Create a camera for rendering the object
+        GameObject cameraObject = new GameObject("RenderCamera");
+        Camera renderCamera = cameraObject.AddComponent<Camera>();
+        renderCamera.targetTexture = renderTexture;
+
+        // Set the camera's position and rotation to capture the object
+        renderCamera.transform.position = obj.transform.position + new Vector3(0, 0, -10); // Adjust Z position as needed
+        renderCamera.transform.LookAt(obj.transform);
+
+        // Render the object
+        renderCamera.Render();
+
+        // Create a new texture to hold the rendered image
+        Texture2D texture = new Texture2D(renderTexture.width, renderTexture.height, TextureFormat.RGB24, false);
+
+        // Activate the render texture
+        RenderTexture.active = renderTexture;
+
+        // Read the pixels from the render texture and apply them to the texture
+        texture.ReadPixels(new Rect(0, 0, renderTexture.width, renderTexture.height), 0, 0);
+        texture.Apply();
+
+        // Release the render texture
+        RenderTexture.active = null;
+
+        // Destroy the temporary camera object
+        Destroy(cameraObject);
+
+        return renderTexture;
+    }
+
+    private void ApplyRenderTextureToRawImage(RenderTexture renderTexture, RawImage rawImage)
+    {
+        // Create a new texture to hold the rendered image
+        Texture2D texture = new Texture2D(renderTexture.width, renderTexture.height, TextureFormat.RGB24, false);
+
+        // Read the pixels from the render texture and apply them to the texture
+        texture.ReadPixels(new Rect(0, 0, renderTexture.width, renderTexture.height), 0, 0);
+        texture.Apply();
+
+        // Apply the texture to the RawImage component
+        rawImage.texture = texture;
+    }
+
+
 
     // Calculate and display statistics based on selected features
     private void CalculateAndDisplayStats(World world)
@@ -565,6 +642,6 @@ public class MainMenuManager : MonoBehaviour
     // Quit the game
     public void QuitGame()
     {
-        Application.Quit();
+        //Application.Quit();
     }
 }
