@@ -499,23 +499,23 @@ public class MainMenuManager : MonoBehaviour
 
         foreach (Feature feature in features)
         {
+            GameObject newFeature = Instantiate(FeaturetemplatePrefab, contentTransform);
+            newFeature.name = feature.name;
+            TextMeshProUGUI textMeshPro = newFeature.transform.Find("FeatureName").GetComponent<TextMeshProUGUI>();
+            textMeshPro.text = feature.name.Replace("_", " ");
+
             foreach (GameObject obj in featureObjects)
             {
                 if (obj.name == feature.name)
                 {
-                    GameObject newFeature = Instantiate(FeaturetemplatePrefab, contentTransform);
-                    newFeature.name = feature.name;
-                    TextMeshProUGUI textMeshPro = newFeature.transform.Find("FeatureName").GetComponent<TextMeshProUGUI>();
-                    textMeshPro.text = feature.name.Replace("_", " ");
                     RawImage rawImage = newFeature.transform.Find("FeatureIcon").GetComponent<RawImage>();
 
                     // Render the 3D object to a texture
-                    RenderTexture renderTexture = Render3DObjectToTexture(obj);
+                    Texture2D renderTexture = Render3DObjectToTexture(obj);
 
                     // Display the rendered texture in the UI RawImage
                     if (renderTexture != null)
                     {
-                        Debug.Log(renderTexture);
                         rawImage.texture = renderTexture;
                     }
 
@@ -526,43 +526,48 @@ public class MainMenuManager : MonoBehaviour
     }
 
     // Function to render 3D object to texture
-    private RenderTexture Render3DObjectToTexture(GameObject obj)
+    private Texture2D Render3DObjectToTexture(GameObject objPrefab)
     {
-        // Create a RenderTexture with the dimensions of the RawImage
-        RenderTexture renderTexture = new RenderTexture(Screen.width, Screen.height, 24);
+        // Create a RenderTexture with the desired dimensions
+        RenderTexture renderTexture = new(256, 256, 24);
+        int LayerIndex = LayerMask.NameToLayer("UiItems");
 
         // Create a camera for rendering the object
-        GameObject cameraObject = new GameObject("RenderCamera");
+        GameObject cameraObject = new("RenderCamera");
         Camera renderCamera = cameraObject.AddComponent<Camera>();
         renderCamera.targetTexture = renderTexture;
+        renderCamera.enabled = false;
+        renderCamera.clearFlags = CameraClearFlags.SolidColor;
+        //renderCamera.backgroundColor = new Color(0, 0, 0, 0);
+        renderCamera.cullingMask = 1 << LayerIndex;
 
-        // Set the camera's position and rotation to capture the object
-        renderCamera.transform.position = obj.transform.position + new Vector3(0, 0, -10); // Adjust Z position as needed
-        renderCamera.transform.LookAt(obj.transform);
+        // Instantiate the object in the scene
+        GameObject obj = Instantiate(objPrefab);
+        obj.transform.position = renderCamera.transform.position + renderCamera.transform.forward * 2f;
+        obj.transform.LookAt(renderCamera.transform);
+        obj.layer = LayerIndex;
 
         // Render the object
         renderCamera.Render();
 
-        // Create a new texture to hold the rendered image
-        Texture2D texture = new Texture2D(renderTexture.width, renderTexture.height, TextureFormat.RGB24, false);
-
-        // Activate the render texture
-        RenderTexture.active = renderTexture;
+        // Create a new Texture2D to hold the rendered image
+        Texture2D texture = new(renderTexture.width, renderTexture.height, TextureFormat.RGBA32, false);
 
         // Read the pixels from the render texture and apply them to the texture
+        RenderTexture.active = renderTexture;
         texture.ReadPixels(new Rect(0, 0, renderTexture.width, renderTexture.height), 0, 0);
         texture.Apply();
 
-        // Release the render texture
+        // Release the render texture and cleanup
         RenderTexture.active = null;
-
-        // Destroy the temporary camera object
         Destroy(cameraObject);
+        Destroy(obj);
 
-        return renderTexture;
+        return texture;
     }
 
-    private void ApplyRenderTextureToRawImage(RenderTexture renderTexture, RawImage rawImage)
+
+private void ApplyRenderTextureToRawImage(RenderTexture renderTexture, RawImage rawImage)
     {
         // Create a new texture to hold the rendered image
         Texture2D texture = new Texture2D(renderTexture.width, renderTexture.height, TextureFormat.RGB24, false);
