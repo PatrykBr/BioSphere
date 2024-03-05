@@ -26,9 +26,9 @@ public class World
         Features = new string[0];
         SelectedFeatures = new string[]
         {
-            "Small_Fins",
-            "Small_Body",
-            "Small_Eyes"
+            "Blue_Fins",
+            "Green_Body",
+            "Red_Eyes"
         }; // Default selected features
     }
 

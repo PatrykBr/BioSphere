@@ -40,10 +40,30 @@ public static class FeatureFinder
         return null;
     }
 
-    public static List<Feature> GetFeatures(World world)
+    public static List<Feature> GetFeatures(World world, string type)
     {
-        List<Feature> features = new List<Feature>();
-        foreach (string featureName in world.Features)
+        List<Feature> features = new();
+
+        IEnumerable<string> featureCollection;
+
+        // Determine which collection to iterate through based on the 'type' parameter
+        if (type == "Features")
+        {
+            featureCollection = world.Features;
+        }
+        else if (type == "SelectedFeatures")
+        {
+            featureCollection = world.SelectedFeatures;
+        }
+        else
+        {
+            // Handle unsupported type
+            Debug.LogError("Unsupported feature type: " + type);
+            return features;
+        }
+
+        // Iterate through the selected collection
+        foreach (string featureName in featureCollection)
         {
             Feature feature = FindFeatureInItems(featureName);
             if (feature != null)
@@ -51,6 +71,8 @@ public static class FeatureFinder
                 features.Add(feature);
             }
         }
+
         return features;
     }
+
 }

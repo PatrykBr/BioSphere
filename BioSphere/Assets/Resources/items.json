@@ -1,50 +1,66 @@
 {
     "creatureFeatures": [
         {
-            "name": "Small_Eyes",
+            "name": "Green_Eyes",
             "stat": {
                 "health": 10
-            },
-            "sprite": "small_eyes.png"
+            }
         },
         {
-            "name": "Big_Eyes",
+            "name": "Blue_Eyes",
             "stat": {
                 "health": 10
-            },
-            "sprite": "big_eyes.png"
+            }
         },
         {
-            "name": "Small_Body",
+            "name": "Red_Eyes",
+            "stat": {
+                "health": 10
+            }
+        },
+        {
+            "name": "Green_Body",
             "stat": {
                 "speed": 15,
                 "strength": 2
-            },
-            "sprite": "small_body.png"
+            }
         },
         {
-            "name": "Medium_Body",
+            "name": "Red_Body",
             "stat": {
                 "speed": 15,
                 "strength": 2
-            },
-            "sprite": "small_body.png"
+            }
         },
         {
-            "name": "Big_Body",
+            "name": "Blue_Body",
             "stat": {
                 "speed": 15,
                 "strength": 2
-            },
-            "sprite": "small_body.png"
+            }
         },
         {
-            "name": "Small_Fins",
+            "name": "Green_Fins",
             "stat": {
                 "speed": 10,
                 "health": 5
-            },
-            "sprite": "small_fins.png"
+            }
+        },
+        {
+            "name": "Red_Fins",
+            "stat": {
+                "speed": 10,
+                "health": 5
+            }
+        },
+        {
+            "name": "Blue_Fins",
+            "stat": {
+                "speed": 10,
+                "health": 5
+            }
         }
     ]
+    
+    
 }

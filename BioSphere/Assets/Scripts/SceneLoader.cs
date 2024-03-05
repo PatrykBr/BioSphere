@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using TMPro;
 using Unity.Collections.LowLevel.Unsafe;
 using UnityEngine;
@@ -224,12 +225,12 @@ public class MainMenuManager : MonoBehaviour
     public void CreateWorld()
     {
         // Create a new world object
-        World newWorld = new World(
+        World newWorld = new(
             worldNameInput,
             (difficultySliderValue == 0) ? "Easy" : (difficultySliderValue == 1) ? "Medium" : "Hard"
         )
         {
-            Features = new string[] { "Small_Fins", "Small_Body", "Small_Eyes" }
+            Features = new string[] { "Blue_Fins", "Green_Body", "Red_Eyes" }
         };
 
         // Get reference to error text UI element
@@ -379,7 +380,7 @@ public class MainMenuManager : MonoBehaviour
         nameText.text = worldName;
 
         Button playButton = templateInstance.transform.Find("PlayButton").GetComponent<Button>();
-        playButton.onClick.AddListener(() => LoadWorld(worldName));
+        playButton.onClick.AddListener(() => LoadWorld("Body", worldName));
 
         Button settingsButton = templateInstance.transform.Find("SettingsButton").GetComponent<Button>();
         settingsButton.onClick.AddListener(() => LoadSettings(worldName));
@@ -475,13 +476,20 @@ public class MainMenuManager : MonoBehaviour
     }
 
     // Load a selected world for editing
-    private void LoadWorld(string worldName)
+    private void LoadWorld(string category, string worldName)
     {
-        World loadedWorld = World.ReadWorldJSON(worldName);
+        if (worldName != null)
+        {
+            loadedWorld = World.ReadWorldJSON(worldName);
+        }
         ClearWorldEntries(creatorPanel.transform.Find("Scroll View/Viewport/Content"));
 
-        List<Feature> features = FeatureFinder.GetFeatures(loadedWorld);
-        CreateFeatures(features);
+        List<Feature> features = FeatureFinder.GetFeatures(loadedWorld, "Features");
+        List<Feature> SelectedFeatures = FeatureFinder.GetFeatures(loadedWorld, "SelectedFeatures");
+        List<Feature> filteredFeatures = features.Where(feature => feature.name.Contains(category)).ToList();
+
+        CreateFeatures(filteredFeatures);
+        CreateSelectedFeatures(SelectedFeatures);
 
         CalculateAndDisplayStats(loadedWorld);
 
@@ -490,97 +498,120 @@ public class MainMenuManager : MonoBehaviour
     }
 
     // Create UI elements for world features
+    private void CreateSelectedFeatures(List<Feature> features)
+    {
+        // Find the parent transform where features will be instantiated
+        Transform contentTransform = creatorPanel.transform.Find("Creature");
+
+        // Load feature objects from resources
+        GameObject[] featureObjects = Resources.LoadAll<GameObject>("FeatureModels");
+
+        // Create render components for rendering textures
+        (Camera renderCamera, RenderTexture renderTexture) = CreateComponents();
+
+        // Load selected body, eyes, and fins objects
+        GameObject SelectedBody = Resources.Load<GameObject>("FeatureModels/" + features.FirstOrDefault(feature => feature.name.Contains("Body")).name);
+        GameObject SelectedEyes = Resources.Load<GameObject>("FeatureModels/" + features.FirstOrDefault(feature => feature.name.Contains("Eye")).name);
+        GameObject SelectedFins = Resources.Load<GameObject>("FeatureModels/" + features.FirstOrDefault(feature => feature.name.Contains("Eye")).name);
+
+        GameObject body = Instantiate(SelectedBody, contentTransform);
+
+        // Loop through each part of the selected body
+        foreach (Transform feature in body.transform)
+        {
+            // Check if the feature is an eye
+            if (feature.name.Contains("Eye"))
+            {
+                Debug.Log("I'm an eye!");
+                // Instantiate a new eye feature
+                GameObject newFeature = Instantiate(SelectedEyes, contentTransform);
+                // Set position to the same as the body part
+                newFeature.transform.position = feature.position;
+            }
+            // Check if the feature is a fin
+            else if (feature.name.Contains("Fin"))
+            {
+                Debug.Log("I'm a fin!");
+                // Instantiate a new fin feature
+                if (SelectedFins != null)
+                {
+                    GameObject newFeature = Instantiate(SelectedFins, contentTransform);
+                    // Set position to the same as the body part
+                    newFeature.transform.position = feature.position;
+                }
+            }
+        }
+
+        // Clean up render components
+        Destroy(renderCamera.gameObject);
+        Destroy(renderTexture);
+    }
+
+    // Create UI elements for world features
     private void CreateFeatures(List<Feature> features)
     {
         Transform contentTransform = creatorPanel.transform.Find("Scroll View/Viewport/Content");
 
-        // Load all GameObjects from the "FeatureModels" folder
         GameObject[] featureObjects = Resources.LoadAll<GameObject>("FeatureModels");
+        (Camera renderCamera, RenderTexture renderTexture) = CreateComponents();
 
         foreach (Feature feature in features)
         {
             GameObject newFeature = Instantiate(FeaturetemplatePrefab, contentTransform);
             newFeature.name = feature.name;
+
             TextMeshProUGUI textMeshPro = newFeature.transform.Find("FeatureName").GetComponent<TextMeshProUGUI>();
             textMeshPro.text = feature.name.Replace("_", " ");
 
-            foreach (GameObject obj in featureObjects)
+            GameObject obj = featureObjects.FirstOrDefault(obj => obj.name == feature.name);
+            if (obj != null)
             {
-                if (obj.name == feature.name)
-                {
-                    RawImage rawImage = newFeature.transform.Find("FeatureIcon").GetComponent<RawImage>();
-
-                    // Render the 3D object to a texture
-                    Texture2D renderTexture = Render3DObjectToTexture(obj);
-
-                    // Display the rendered texture in the UI RawImage
-                    if (renderTexture != null)
-                    {
-                        rawImage.texture = renderTexture;
-                    }
-
-                    break; // Stop searching once the object is found
-                }
+                RenderTextureToRawImage(obj, newFeature.transform.Find("FeatureIcon").GetComponent<RawImage>(), renderCamera, renderTexture);
             }
         }
+
+        Destroy(renderCamera.gameObject);
+        Destroy(renderTexture);
     }
 
-    // Function to render 3D object to texture
-    private Texture2D Render3DObjectToTexture(GameObject objPrefab)
+    private void RenderTextureToRawImage(GameObject objPrefab, RawImage rawImage, Camera renderCamera, RenderTexture renderTexture)
     {
-        // Create a RenderTexture with the desired dimensions
-        RenderTexture renderTexture = new(256, 256, 24);
-        int LayerIndex = LayerMask.NameToLayer("UiItems");
+        GameObject obj = Instantiate(objPrefab);
+        obj.transform.position = renderCamera.transform.position + renderCamera.transform.forward * 2f;
+        obj.transform.LookAt(renderCamera.transform);
+        obj.layer = LayerMask.NameToLayer("UiItems");
 
-        // Create a camera for rendering the object
+        renderCamera.Render();
+
+        Texture2D texture = new(renderTexture.width, renderTexture.height, TextureFormat.RGBA32, false);
+        RenderTexture.active = renderTexture;
+        texture.ReadPixels(new Rect(0, 0, renderTexture.width, renderTexture.height), 0, 0);
+        texture.Apply();
+        RenderTexture.active = null;
+
+        DestroyImmediate(obj);
+        rawImage.texture = texture;
+    }
+
+    private (Camera, RenderTexture) CreateComponents()
+    {
+        RenderTexture renderTexture = new(256, 256, 24);
+
         GameObject cameraObject = new("RenderCamera");
         Camera renderCamera = cameraObject.AddComponent<Camera>();
         renderCamera.targetTexture = renderTexture;
         renderCamera.enabled = false;
         renderCamera.clearFlags = CameraClearFlags.SolidColor;
-        //renderCamera.backgroundColor = new Color(0, 0, 0, 0);
-        renderCamera.cullingMask = 1 << LayerIndex;
+        renderCamera.backgroundColor = new Color(0, 0, 0, 0);
+        renderCamera.cullingMask = 1 << LayerMask.NameToLayer("UiItems");
 
-        // Instantiate the object in the scene
-        GameObject obj = Instantiate(objPrefab);
-        obj.transform.position = renderCamera.transform.position + renderCamera.transform.forward * 2f;
-        obj.transform.LookAt(renderCamera.transform);
-        obj.layer = LayerIndex;
-
-        // Render the object
-        renderCamera.Render();
-
-        // Create a new Texture2D to hold the rendered image
-        Texture2D texture = new(renderTexture.width, renderTexture.height, TextureFormat.RGBA32, false);
-
-        // Read the pixels from the render texture and apply them to the texture
-        RenderTexture.active = renderTexture;
-        texture.ReadPixels(new Rect(0, 0, renderTexture.width, renderTexture.height), 0, 0);
-        texture.Apply();
-
-        // Release the render texture and cleanup
-        RenderTexture.active = null;
-        Destroy(cameraObject);
-        Destroy(obj);
-
-        return texture;
+        return (renderCamera, renderTexture);
     }
 
-
-private void ApplyRenderTextureToRawImage(RenderTexture renderTexture, RawImage rawImage)
+    public void ShowFeatureTab(string category)
     {
-        // Create a new texture to hold the rendered image
-        Texture2D texture = new Texture2D(renderTexture.width, renderTexture.height, TextureFormat.RGB24, false);
-
-        // Read the pixels from the render texture and apply them to the texture
-        texture.ReadPixels(new Rect(0, 0, renderTexture.width, renderTexture.height), 0, 0);
-        texture.Apply();
-
-        // Apply the texture to the RawImage component
-        rawImage.texture = texture;
+        LoadWorld(category, null);
     }
-
-
 
     // Calculate and display statistics based on selected features
     private void CalculateAndDisplayStats(World world)
