@@ -503,8 +503,13 @@ public class MainMenuManager : MonoBehaviour
         // Find the parent transform where features will be instantiated
         Transform contentTransform = creatorPanel.transform.Find("Creature");
 
-        // Load feature objects from resources
-        GameObject[] featureObjects = Resources.LoadAll<GameObject>("FeatureModels");
+        foreach (Transform obj in contentTransform)
+        {
+            Destroy(obj);
+        }
+
+            // Load feature objects from resources
+            GameObject[] featureObjects = Resources.LoadAll<GameObject>("FeatureModels");
 
         // Create render components for rendering textures
         (Camera renderCamera, RenderTexture renderTexture) = CreateComponents();
@@ -512,39 +517,37 @@ public class MainMenuManager : MonoBehaviour
         // Load selected body, eyes, and fins objects
         GameObject SelectedBody = Resources.Load<GameObject>("FeatureModels/" + features.FirstOrDefault(feature => feature.name.Contains("Body")).name);
         GameObject SelectedEyes = Resources.Load<GameObject>("FeatureModels/" + features.FirstOrDefault(feature => feature.name.Contains("Eye")).name);
-        GameObject SelectedFins = Resources.Load<GameObject>("FeatureModels/" + features.FirstOrDefault(feature => feature.name.Contains("Eye")).name);
+        GameObject SelectedFins = Resources.Load<GameObject>("FeatureModels/" + features.FirstOrDefault(feature => feature.name.Contains("Fin")).name);
 
         GameObject body = Instantiate(SelectedBody, contentTransform);
 
         // Loop through each part of the selected body
         foreach (Transform feature in body.transform)
         {
-            // Check if the feature is an eye
             if (feature.name.Contains("Eye"))
             {
-                Debug.Log("I'm an eye!");
-                // Instantiate a new eye feature
+                if (SelectedEyes == null) { continue; }
+
                 GameObject newFeature = Instantiate(SelectedEyes, contentTransform);
-                // Set position to the same as the body part
-                newFeature.transform.position = feature.position;
+                newFeature.transform.SetParent(feature); // Set parent to the body's part
+                newFeature.transform.localPosition = Vector3.zero; // Ensure correct position
             }
-            // Check if the feature is a fin
             else if (feature.name.Contains("Fin"))
             {
-                Debug.Log("I'm a fin!");
-                // Instantiate a new fin feature
-                if (SelectedFins != null)
-                {
-                    GameObject newFeature = Instantiate(SelectedFins, contentTransform);
-                    // Set position to the same as the body part
-                    newFeature.transform.position = feature.position;
-                }
+                if (SelectedFins == null) { continue; }
+
+                GameObject newFeature = Instantiate(SelectedFins, contentTransform);
+                newFeature.transform.SetParent(feature); // Set parent to the body's part
+                newFeature.transform.localPosition = Vector3.zero; // Ensure correct position
             }
         }
 
         // Clean up render components
         Destroy(renderCamera.gameObject);
         Destroy(renderTexture);
+
+        RenderTextureToRawImage(body, creatorPanel.transform.Find("Creature").GetComponent<RawImage>(), renderCamera, renderTexture);
+
     }
 
     // Create UI elements for world features
@@ -580,6 +583,11 @@ public class MainMenuManager : MonoBehaviour
         obj.transform.position = renderCamera.transform.position + renderCamera.transform.forward * 2f;
         obj.transform.LookAt(renderCamera.transform);
         obj.layer = LayerMask.NameToLayer("UiItems");
+        foreach (Transform child in obj.transform)
+        {
+            child.gameObject.layer = LayerMask.NameToLayer("UiItems");
+
+        }
 
         renderCamera.Render();
 
