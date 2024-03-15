@@ -6367,7 +6367,7 @@ MonoBehaviour:
   playPanel: {fileID: 514024764}
   creatorPanel: {fileID: 1959146818}
   templatePrefab: {fileID: 3805910064678691877, guid: 8cd77ffb755f2204fa35eec2c39ea1a9, type: 3}
-  FeaturetemplatePrefab: {fileID: 566127520655849585, guid: 7d3e70247b879cf4fada289b0dc45acb, type: 3}
+  FeatureTemplatePrefab: {fileID: 566127520655849585, guid: 7d3e70247b879cf4fada289b0dc45acb, type: 3}
   FeatureModels: {fileID: 0}
 --- !u!4 &814088931
 Transform:

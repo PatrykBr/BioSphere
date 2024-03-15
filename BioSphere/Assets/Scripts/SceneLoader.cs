@@ -4,10 +4,8 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using TMPro;
-using Unity.Collections.LowLevel.Unsafe;
 using UnityEngine;
 using UnityEngine.UI;
-using UnityEngine.WSA;
 
 public enum MenuScreen { MainMenu, Settings, Credits, PlayScreen }
 
@@ -20,7 +18,7 @@ public class MainMenuManager : MonoBehaviour
     public GameObject playPanel;
     public GameObject creatorPanel;
     public GameObject templatePrefab;
-    public GameObject FeaturetemplatePrefab;
+    public GameObject FeatureTemplatePrefab;
     public GameObject FeatureModels;
 
     // References to various settings panels
@@ -348,7 +346,7 @@ public class MainMenuManager : MonoBehaviour
         Transform contentTransform = worldSelectionPanel.transform.Find("Scroll View/Viewport/Content");
 
         // Clear existing world entries
-        ClearWorldEntries(contentTransform);
+        DestroyChildren(contentTransform);
 
         // Get all JSON files in the world directory
         string[] jsonFiles = Directory.GetFiles(World.WorldDirectory, "*.json");
@@ -358,15 +356,6 @@ public class MainMenuManager : MonoBehaviour
         {
             string worldName = Path.GetFileNameWithoutExtension(jsonFile);
             InstantiateWorldEntry(contentTransform, worldName);
-        }
-    }
-
-    // Clear existing world entries from the UI
-    private void ClearWorldEntries(Transform contentTransform)
-    {
-        foreach (Transform child in contentTransform)
-        {
-            Destroy(child.gameObject);
         }
     }
 
@@ -475,21 +464,20 @@ public class MainMenuManager : MonoBehaviour
         }
     }
 
-    // Load a selected world for editing
     private void LoadWorld(string category, string worldName)
     {
         if (worldName != null)
         {
             loadedWorld = World.ReadWorldJSON(worldName);
-        }
-        ClearWorldEntries(creatorPanel.transform.Find("Scroll View/Viewport/Content"));
+        } 
+        DestroyChildren(creatorPanel.transform.Find("Scroll View/Viewport/Content"));
 
         List<Feature> features = FeatureFinder.GetFeatures(loadedWorld, "Features");
-        List<Feature> SelectedFeatures = FeatureFinder.GetFeatures(loadedWorld, "SelectedFeatures");
+        List<Feature> selectedFeatures = FeatureFinder.GetFeatures(loadedWorld, "SelectedFeatures");
         List<Feature> filteredFeatures = features.Where(feature => feature.name.Contains(category)).ToList();
 
         CreateFeatures(filteredFeatures);
-        CreateSelectedFeatures(SelectedFeatures);
+        CreateSelectedFeatures(selectedFeatures);
 
         CalculateAndDisplayStats(loadedWorld);
 
@@ -497,57 +485,44 @@ public class MainMenuManager : MonoBehaviour
         playPanel.SetActive(false);
     }
 
-    // Create UI elements for world features
+    // Create UI elements for selected features
     private void CreateSelectedFeatures(List<Feature> features)
     {
-        // Find the parent transform where features will be instantiated
         Transform contentTransform = creatorPanel.transform.Find("Creature");
+        DestroyChildren(contentTransform);
 
-        foreach (Transform obj in contentTransform)
-        {
-            Destroy(obj);
-        }
+        GameObject[] featureObjects = Resources.LoadAll<GameObject>("FeatureModels");
+        (Camera renderCamera, RenderTexture renderTexture) = CreateRenderComponents();
 
-            // Load feature objects from resources
-            GameObject[] featureObjects = Resources.LoadAll<GameObject>("FeatureModels");
+        GameObject selectedBody = Resources.Load<GameObject>("FeatureModels/" + features.FirstOrDefault(feature => feature.name.Contains("Body")).name);
+        GameObject selectedEyes = Resources.Load<GameObject>("FeatureModels/" + features.FirstOrDefault(feature => feature.name.Contains("Eye")).name);
+        GameObject selectedFins = Resources.Load<GameObject>("FeatureModels/" + features.FirstOrDefault(feature => feature.name.Contains("Fin")).name);
 
-        // Create render components for rendering textures
-        (Camera renderCamera, RenderTexture renderTexture) = CreateComponents();
+        GameObject body = Instantiate(selectedBody, contentTransform);
 
-        // Load selected body, eyes, and fins objects
-        GameObject SelectedBody = Resources.Load<GameObject>("FeatureModels/" + features.FirstOrDefault(feature => feature.name.Contains("Body")).name);
-        GameObject SelectedEyes = Resources.Load<GameObject>("FeatureModels/" + features.FirstOrDefault(feature => feature.name.Contains("Eye")).name);
-        GameObject SelectedFins = Resources.Load<GameObject>("FeatureModels/" + features.FirstOrDefault(feature => feature.name.Contains("Fin")).name);
-
-        GameObject body = Instantiate(SelectedBody, contentTransform);
-
-        // Loop through each part of the selected body
         foreach (Transform feature in body.transform)
         {
             if (feature.name.Contains("Eye"))
-            {
-                if (SelectedEyes == null) { continue; }
-
-                GameObject newFeature = Instantiate(SelectedEyes, contentTransform);
-                newFeature.transform.SetParent(feature); // Set parent to the body's part
-                newFeature.transform.localPosition = Vector3.zero; // Ensure correct position
-            }
+                InstantiateFeature(selectedEyes, contentTransform, feature);
             else if (feature.name.Contains("Fin"))
-            {
-                if (SelectedFins == null) { continue; }
-
-                GameObject newFeature = Instantiate(SelectedFins, contentTransform);
-                newFeature.transform.SetParent(feature); // Set parent to the body's part
-                newFeature.transform.localPosition = Vector3.zero; // Ensure correct position
-            }
+                InstantiateFeature(selectedFins, contentTransform, feature);
         }
-
-        // Clean up render components
-        Destroy(renderCamera.gameObject);
-        Destroy(renderTexture);
 
         RenderTextureToRawImage(body, creatorPanel.transform.Find("Creature").GetComponent<RawImage>(), renderCamera, renderTexture);
 
+        Destroy(renderCamera.gameObject);
+        Destroy(renderTexture);
+    }
+
+    // Instantiate a feature object and set its parent and position
+    private void InstantiateFeature(GameObject featurePrefab, Transform parent, Transform target)
+    {
+        if (featurePrefab == null)
+            return;
+
+        GameObject newFeature = Instantiate(featurePrefab, parent);
+        newFeature.transform.SetParent(target);
+        newFeature.transform.localPosition = Vector3.zero;
     }
 
     // Create UI elements for world features
@@ -556,11 +531,11 @@ public class MainMenuManager : MonoBehaviour
         Transform contentTransform = creatorPanel.transform.Find("Scroll View/Viewport/Content");
 
         GameObject[] featureObjects = Resources.LoadAll<GameObject>("FeatureModels");
-        (Camera renderCamera, RenderTexture renderTexture) = CreateComponents();
+        (Camera renderCamera, RenderTexture renderTexture) = CreateRenderComponents();
 
         foreach (Feature feature in features)
         {
-            GameObject newFeature = Instantiate(FeaturetemplatePrefab, contentTransform);
+            GameObject newFeature = Instantiate(FeatureTemplatePrefab, contentTransform);
             newFeature.name = feature.name;
 
             TextMeshProUGUI textMeshPro = newFeature.transform.Find("FeatureName").GetComponent<TextMeshProUGUI>();
@@ -568,45 +543,86 @@ public class MainMenuManager : MonoBehaviour
 
             GameObject obj = featureObjects.FirstOrDefault(obj => obj.name == feature.name);
             if (obj != null)
-            {
                 RenderTextureToRawImage(obj, newFeature.transform.Find("FeatureIcon").GetComponent<RawImage>(), renderCamera, renderTexture);
-            }
         }
 
         Destroy(renderCamera.gameObject);
         Destroy(renderTexture);
     }
 
+    // Set the layer of an object and its children recursively
+    private void SetLayerRecursively(Transform objTransform, int layer)
+    {
+        objTransform.gameObject.layer = layer;
+        foreach (Transform child in objTransform)
+            SetLayerRecursively(child, layer);
+    }
+
+    // Render the texture of an object to a RawImage
     private void RenderTextureToRawImage(GameObject objPrefab, RawImage rawImage, Camera renderCamera, RenderTexture renderTexture)
     {
         GameObject obj = Instantiate(objPrefab);
-        obj.transform.position = renderCamera.transform.position + renderCamera.transform.forward * 2f;
-        obj.transform.LookAt(renderCamera.transform);
-        obj.layer = LayerMask.NameToLayer("UiItems");
-        foreach (Transform child in obj.transform)
-        {
-            child.gameObject.layer = LayerMask.NameToLayer("UiItems");
+        Bounds bounds = CalculateObjectBounds(obj);
 
-        }
+        float cameraDistance = 1.0f;
+        float objectSize = CalculateObjectSize(bounds);
+        float distance = CalculateCameraDistance(renderCamera, cameraDistance, objectSize); // Pass renderCamera as a parameter
+        renderCamera.transform.position = bounds.center - distance * renderCamera.transform.forward;
+
+        obj.layer = LayerMask.NameToLayer("UiItems");
+        SetLayerRecursively(obj.transform, LayerMask.NameToLayer("UiItems"));
 
         renderCamera.Render();
 
-        Texture2D texture = new(renderTexture.width, renderTexture.height, TextureFormat.RGBA32, false);
-        RenderTexture.active = renderTexture;
-        texture.ReadPixels(new Rect(0, 0, renderTexture.width, renderTexture.height), 0, 0);
-        texture.Apply();
-        RenderTexture.active = null;
-
+        Texture2D texture = CaptureRenderTexture(renderTexture);
         DestroyImmediate(obj);
         rawImage.texture = texture;
     }
 
-    private (Camera, RenderTexture) CreateComponents()
+    // Calculate the bounds of an object
+    private Bounds CalculateObjectBounds(GameObject obj)
     {
-        RenderTexture renderTexture = new(256, 256, 24);
+        Renderer[] renderers = obj.GetComponentsInChildren<Renderer>();
+        Bounds bounds = new Bounds(obj.transform.position, Vector3.zero);
+        foreach (Renderer renderer in renderers)
+            bounds.Encapsulate(renderer.bounds);
+        return bounds;
+    }
 
-        GameObject cameraObject = new("RenderCamera");
+    // Calculate the size of an object
+    private float CalculateObjectSize(Bounds bounds)
+    {
+        Vector3 objectSizes = bounds.max - bounds.min;
+        return Mathf.Max(objectSizes.x, objectSizes.y, objectSizes.z);
+    }
+
+    // Calculate the distance of the camera from the object
+    private float CalculateCameraDistance(Camera renderCamera, float cameraDistance, float objectSize)
+    {
+        float cameraView = 2.0f * Mathf.Tan(0.5f * Mathf.Deg2Rad * renderCamera.fieldOfView);
+        float distance = cameraDistance * objectSize / cameraView;
+        distance += 0.5f * objectSize;
+        return distance;
+    }
+
+    // Capture the render texture and return as a Texture2D
+    private Texture2D CaptureRenderTexture(RenderTexture renderTexture)
+    {
+        Texture2D texture = new Texture2D(renderTexture.width, renderTexture.height, TextureFormat.RGBA32, false);
+        RenderTexture.active = renderTexture;
+        texture.ReadPixels(new Rect(0, 0, renderTexture.width, renderTexture.height), 0, 0);
+        texture.Apply();
+        RenderTexture.active = null;
+        return texture;
+    }
+
+    // Create camera and render texture components
+    private (Camera, RenderTexture) CreateRenderComponents()
+    {
+        RenderTexture renderTexture = new RenderTexture(256, 256, 24);
+        GameObject cameraObject = new GameObject("RenderCamera");
         Camera renderCamera = cameraObject.AddComponent<Camera>();
+
         renderCamera.targetTexture = renderTexture;
         renderCamera.enabled = false;
         renderCamera.clearFlags = CameraClearFlags.SolidColor;
@@ -614,6 +630,13 @@ public class MainMenuManager : MonoBehaviour
         renderCamera.cullingMask = 1 << LayerMask.NameToLayer("UiItems");
 
         return (renderCamera, renderTexture);
+    }
+
+    // Clear all children of a transform
+    private void DestroyChildren(Transform parent)
+    {
+        foreach (Transform child in parent)
+            Destroy(child.gameObject);
     }
 
     public void ShowFeatureTab(string category)
