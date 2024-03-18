@@ -43,10 +43,8 @@ public static class FeatureFinder
     public static List<Feature> GetFeatures(World world, string type)
     {
         List<Feature> features = new();
-
         IEnumerable<string> featureCollection;
 
-        // Determine which collection to iterate through based on the 'type' parameter
         if (type == "Features")
         {
             featureCollection = world.Features;
@@ -57,7 +55,6 @@ public static class FeatureFinder
         }
         else
         {
-            // Handle unsupported type
             Debug.LogError("Unsupported feature type: " + type);
             return features;
         }

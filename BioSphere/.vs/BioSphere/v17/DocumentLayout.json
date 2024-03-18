@@ -32,9 +32,10 @@
               "RelativeDocumentMoniker": "Assets\\Scripts\\CreatureManager.cs",
               "ToolTip": "C:\\Users\\Patryk\\OneDrive\\Documents\\Github\\BioSphere\\BioSphere\\Assets\\Scripts\\CreatureManager.cs",
               "RelativeToolTip": "Assets\\Scripts\\CreatureManager.cs",
-              "ViewState": "AQIAACEAAAAAAAAAAAAUwDMAAAAvAAAA",
+              "ViewState": "AQIAABQAAAAAAAAAAAAywD4AAAAuAAAA",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2024-03-05T16:18:09.061Z"
+              "WhenOpened": "2024-03-05T16:18:09.061Z",
+              "EditorCaption": ""
             },
             {
               "$type": "Document",
@@ -44,7 +45,7 @@
               "RelativeDocumentMoniker": "Assets\\Scripts\\WorldsManager.cs",
               "ToolTip": "C:\\Users\\Patryk\\OneDrive\\Documents\\Github\\BioSphere\\BioSphere\\Assets\\Scripts\\WorldsManager.cs",
               "RelativeToolTip": "Assets\\Scripts\\WorldsManager.cs",
-              "ViewState": "AQIAAAUAAAAAAAAAAAAQwCUAAABbAAAA",
+              "ViewState": "AQIAAAUAAAAAAAAAAAAQwA8AAABHAAAA",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2023-12-08T22:12:18.299Z",
               "EditorCaption": ""
@@ -57,7 +58,7 @@
               "RelativeDocumentMoniker": "Assets\\Scripts\\SceneLoader.cs",
               "ToolTip": "C:\\Users\\Patryk\\OneDrive\\Documents\\Github\\BioSphere\\BioSphere\\Assets\\Scripts\\SceneLoader.cs",
               "RelativeToolTip": "Assets\\Scripts\\SceneLoader.cs",
-              "ViewState": "AQIAAM0BAAAAAAAAAAAuwNcBAAAKAAAA",
+              "ViewState": "AQIAAFwBAAAAAAAAAAAUwHQBAAAAAAAA",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2023-11-28T17:38:42.616Z",
               "EditorCaption": ""
