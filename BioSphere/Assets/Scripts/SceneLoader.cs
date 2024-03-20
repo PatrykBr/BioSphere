@@ -19,7 +19,6 @@ public class MainMenuManager : MonoBehaviour
     public GameObject creatorPanel;
     public GameObject templatePrefab;
     public GameObject FeatureTemplatePrefab;
-    public GameObject FeatureModels;
 
     // References to various settings panels
     private GameObject generalSettingsPanel;
@@ -467,11 +466,12 @@ public class MainMenuManager : MonoBehaviour
     // Load the world based on the provided category and world name
     private void LoadWorld(string category, string worldName)
     {
-        if (worldName != null)
+        if (!string.IsNullOrEmpty(worldName))
         {
             loadedWorld = World.ReadWorldJSON(worldName);
         }
 
+        // Clear existing UI elements
         DestroyChildren(creatorPanel.transform.Find("Scroll View/Viewport/Content"));
 
         // Filter features based on the provided category
@@ -481,7 +481,7 @@ public class MainMenuManager : MonoBehaviour
         List<Feature> selectedFeatures = FeatureFinder.GetFeatures(loadedWorld, "SelectedFeatures");
 
         // Create UI elements for filtered features and selected features
-        CreateButtonFeaturesUI(filteredFeatures);
+        CreateFeaturesUI(filteredFeatures, false);
         CreateSelectedFeaturesUI(selectedFeatures);
 
         CalculateAndDisplayStats(loadedWorld);
@@ -499,28 +499,26 @@ public class MainMenuManager : MonoBehaviour
 
         (Camera renderCamera, RenderTexture renderTexture) = CreateRenderComponents();
 
-        // Load selected feature models and instantiate them
-        GameObject selectedBody = Resources.Load<GameObject>("FeatureModels/" + features.FirstOrDefault(feature => feature.name.Contains("Body")).name);
-        GameObject selectedEyes = Resources.Load<GameObject>("FeatureModels/" + features.FirstOrDefault(feature => feature.name.Contains("Eye")).name);
-        GameObject selectedFins = Resources.Load<GameObject>("FeatureModels/" + features.FirstOrDefault(feature => feature.name.Contains("Fin")).name);
+        // Load and instantiate selected feature models
+        GameObject selectedBody = LoadFeatureModel(features, "Body");
+        GameObject selectedEyes = LoadFeatureModel(features, "Eye");
+        GameObject selectedFins = LoadFeatureModel(features, "Fin");
+
+        if (selectedBody == null)
+        {
+            foreach (var item in features)
+            {
+                Debug.Log(item.name.ToString());
+            }
+            Debug.LogError("Body feature model not found in Resources folder.");
+            return;
+        }
 
         GameObject body = Instantiate(selectedBody, contentTransform);
 
-        foreach (Transform featureTransform in body.transform)
-        {
-            // Instantiate eyes if available
-            if (featureTransform.name.Contains("Eye"))
-            {
-                if (selectedEyes == null) { continue; }
-                Instantiate(selectedEyes, featureTransform.position, Quaternion.identity, featureTransform);
-            }
-            // Instantiate fins if available
-            else if (featureTransform.name.Contains("Movement"))
-            {
-                if (selectedFins == null) { continue; }
-                Instantiate(selectedFins, featureTransform.position, Quaternion.identity, featureTransform);
-            }
-        }
+        // Instantiate eyes and fins on the body
+        InstantiateChildFeatures(body.transform, selectedEyes, "Eye");
+        InstantiateChildFeatures(body.transform, selectedFins, "Fin");
 
         // Render the texture of the instantiated body feature
         RenderTextureToRawImage(body, creatorPanel.transform.Find("Creature").GetComponent<RawImage>(), renderCamera, renderTexture);
@@ -529,9 +527,31 @@ public class MainMenuManager : MonoBehaviour
         Destroy(renderCamera.gameObject);
         Destroy(renderTexture);
     }
+    // Load a feature model from resources
+    private GameObject LoadFeatureModel(List<Feature> features, string keyword)
+    {
+        Feature feature = features.FirstOrDefault(f => f.name.Contains(keyword));
+        return feature != null ? Resources.Load<GameObject>("FeatureModels/" + feature.name) : null;
+    }
+
+    // Instantiate child features on a parent transform
+    private void InstantiateChildFeatures(Transform parentTransform, GameObject featurePrefab, string keyword)
+    {
+        if (featurePrefab == null)
+            return;
+
+        foreach (Transform childTransform in parentTransform)
+        {
+            if (childTransform.name.Contains(keyword))
+            {
+                Instantiate(featurePrefab, childTransform.position, Quaternion.identity, childTransform);
+            }
+        }
+    }
 
     // Create UI elements for world features
-    private void CreateButtonFeaturesUI(List<Feature> features)
+    // Create UI elements for world features
+    private void CreateFeaturesUI(List<Feature> features, bool isSelectedFeatures)
     {
         Transform contentTransform = creatorPanel.transform.Find("Scroll View/Viewport/Content");
 
@@ -552,10 +572,63 @@ public class MainMenuManager : MonoBehaviour
             GameObject featureObject = featureObjects.FirstOrDefault(obj => obj.name == feature.name);
             if (featureObject != null)
                 RenderTextureToRawImage(featureObject, newFeatureUI.transform.Find("FeatureIcon").GetComponent<RawImage>(), renderCamera, renderTexture);
+
+            Button featureButton = newFeatureUI.GetComponent<Button>();
+            featureButton.onClick.AddListener(() => SelectFeature(feature.name, !isSelectedFeatures));
         }
 
         Destroy(renderCamera.gameObject);
         Destroy(renderTexture);
+    }
+
+    private void SelectFeature(string featureName, bool isSelected)
+    {
+        Debug.Log(featureName);
+        Debug.Log(loadedWorld.WorldName);
+
+        List<string> updatedFeatures = new List<string>(loadedWorld.SelectedFeatures);
+
+        // Check if the feature name contains any of the keywords "Body", "Eyes", or "Fins"
+        string keyword = GetKeywordFromFeatureName(featureName);
+
+        if (!string.IsNullOrEmpty(keyword))
+        {
+            // If the feature is being selected, add it to the list
+            if (isSelected)
+            {
+                updatedFeatures.RemoveAll(f => f.Contains(keyword));
+                updatedFeatures.Add(featureName);
+            }
+            // If the feature is being deselected, remove it from the list
+            else
+            {
+                updatedFeatures.Remove(featureName);
+            }
+        }
+
+        // Update the SelectedFeatures array in the loadedWorld object
+        loadedWorld.SelectedFeatures = updatedFeatures.ToArray();
+
+        // Save the new world to a JSON file
+        World.WriteWorldJSON(loadedWorld);
+
+        List<Feature> selectedFeatures = FeatureFinder.GetFeatures(loadedWorld, "SelectedFeatures");
+
+        CreateSelectedFeaturesUI(selectedFeatures);
+
+        CalculateAndDisplayStats(loadedWorld);
+    }
+
+    private string GetKeywordFromFeatureName(string featureName)
+    {
+        if (featureName.Contains("Body"))
+            return "Body";
+        else if (featureName.Contains("Eye"))
+            return "Eye";
+        else if (featureName.Contains("Fin"))
+            return "Fin";
+        else
+            return null;
     }
 
     // Render the texture of an object to a RawImage
