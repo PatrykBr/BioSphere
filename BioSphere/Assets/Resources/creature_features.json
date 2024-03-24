@@ -2,60 +2,60 @@
     "creatureFeatures": [
         {
             "name": "Green_Eyes",
-            "stat": {
+            "stats": {
                 "health": 6
             }
         },
         {
             "name": "Blue_Eyes",
-            "stat": {
+            "stats": {
                 "health": 7
             }
         },
         {
             "name": "Red_Eyes",
-            "stat": {
+            "stats": {
                 "health": 9
             }
         },
         {
             "name": "Green_Body",
-            "stat": {
+            "stats": {
                 "speed": 12,
                 "strength": 2
             }
         },
         {
             "name": "Red_Body",
-            "stat": {
+            "stats": {
                 "speed": 4,
                 "strength": 8
             }
         },
         {
             "name": "Blue_Body",
-            "stat": {
+            "stats": {
                 "speed": 6,
                 "strength": 7
             }
         },
         {
             "name": "Green_Fins",
-            "stat": {
+            "stats": {
                 "speed": 10,
                 "health": 1
             }
         },
         {
             "name": "Red_Fins",
-            "stat": {
+            "stats": {
                 "speed": 2,
                 "health": 7
             }
         },
         {
             "name": "Blue_Fins",
-            "stat": {
+            "stats": {
                 "speed": 2,
                 "health": 8
             }

@@ -8,7 +8,7 @@ public class World
     public string WorldDifficulty;
     public int TimesDied;
     public float TimePlayed;
-    public string[] Features;
+    public string[] AvailableFeatures;
     public string[] SelectedFeatures;
 
     // Directory where world data will be stored
@@ -22,8 +22,8 @@ public class World
         WorldName = name;
         WorldDifficulty = difficulty;
         TimesDied = 0;
-        TimePlayed = 0f;    
-        Features = new string[0];
+        TimePlayed = 0f;
+        AvailableFeatures = new string[0];
         SelectedFeatures = new string[]
         {
             "Blue_Fins",

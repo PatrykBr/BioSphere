@@ -227,7 +227,7 @@ public class MainMenuManager : MonoBehaviour
             (difficultySliderValue == 0) ? "Easy" : (difficultySliderValue == 1) ? "Medium" : "Hard"
         )
         {
-            Features = new string[] { "Blue_Fins", "Green_Body", "Red_Eyes" }
+            AvailableFeatures = new string[] { "Blue_Fins", "Green_Body", "Red_Eyes" }
         };
 
         // Get reference to error text UI element
@@ -475,10 +475,10 @@ public class MainMenuManager : MonoBehaviour
         DestroyChildren(creatorPanel.transform.Find("Scroll View/Viewport/Content"));
 
         // Filter features based on the provided category
-        List<Feature> filteredFeatures = FeatureFinder.GetFeatures(loadedWorld, "Features")
+        List<CreatureFeature> filteredFeatures = CreatureManager.GetFeaturesFromWorld(loadedWorld, "AvailableFeatures")
             .Where(feature => feature.name.Contains(category)).ToList();
 
-        List<Feature> selectedFeatures = FeatureFinder.GetFeatures(loadedWorld, "SelectedFeatures");
+        List<CreatureFeature> selectedFeatures = CreatureManager.GetFeaturesFromWorld(loadedWorld, "SelectedFeatures");
 
         // Create UI elements for filtered features and selected features
         CreateFeaturesUI(filteredFeatures, false);
@@ -491,7 +491,7 @@ public class MainMenuManager : MonoBehaviour
     }
 
     // Create UI elements for selected features
-    private void CreateSelectedFeaturesUI(List<Feature> features)
+    private void CreateSelectedFeaturesUI(List<CreatureFeature> features)
     {
         Transform contentTransform = creatorPanel.transform.Find("Creature");
 
@@ -499,26 +499,9 @@ public class MainMenuManager : MonoBehaviour
 
         (Camera renderCamera, RenderTexture renderTexture) = CreateRenderComponents();
 
-        // Load and instantiate selected feature models
-        GameObject selectedBody = LoadFeatureModel(features, "Body");
-        GameObject selectedEyes = LoadFeatureModel(features, "Eye");
-        GameObject selectedFins = LoadFeatureModel(features, "Fin");
+        GameObject body = CreatureManager.CreateSelectedFeatureModel(features);
+        body.transform.SetParent(contentTransform);
 
-        if (selectedBody == null)
-        {
-            foreach (var item in features)
-            {
-                Debug.Log(item.name.ToString());
-            }
-            Debug.LogError("Body feature model not found in Resources folder.");
-            return;
-        }
-
-        GameObject body = Instantiate(selectedBody, contentTransform);
-
-        // Instantiate eyes and fins on the body
-        InstantiateChildFeatures(body.transform, selectedEyes, "Eye");
-        InstantiateChildFeatures(body.transform, selectedFins, "Fin");
 
         // Render the texture of the instantiated body feature
         RenderTextureToRawImage(body, creatorPanel.transform.Find("Creature").GetComponent<RawImage>(), renderCamera, renderTexture);
@@ -527,40 +510,18 @@ public class MainMenuManager : MonoBehaviour
         Destroy(renderCamera.gameObject);
         Destroy(renderTexture);
     }
-    // Load a feature model from resources
-    private GameObject LoadFeatureModel(List<Feature> features, string keyword)
-    {
-        Feature feature = features.FirstOrDefault(f => f.name.Contains(keyword));
-        return feature != null ? Resources.Load<GameObject>("FeatureModels/" + feature.name) : null;
-    }
-
-    // Instantiate child features on a parent transform
-    private void InstantiateChildFeatures(Transform parentTransform, GameObject featurePrefab, string keyword)
-    {
-        if (featurePrefab == null)
-            return;
-
-        foreach (Transform childTransform in parentTransform)
-        {
-            if (childTransform.name.Contains(keyword))
-            {
-                Instantiate(featurePrefab, childTransform.position, Quaternion.identity, childTransform);
-            }
-        }
-    }
 
     // Create UI elements for world features
-    // Create UI elements for world features
-    private void CreateFeaturesUI(List<Feature> features, bool isSelectedFeatures)
+    private void CreateFeaturesUI(List<CreatureFeature> features, bool isSelectedFeatures)
     {
         Transform contentTransform = creatorPanel.transform.Find("Scroll View/Viewport/Content");
 
         // Load all feature models
-        GameObject[] featureObjects = Resources.LoadAll<GameObject>("FeatureModels");
+        GameObject[] featureObjects = Resources.LoadAll<GameObject>("FeaturePrefabs");
 
         (Camera renderCamera, RenderTexture renderTexture) = CreateRenderComponents();
 
-        foreach (Feature feature in features)
+        foreach (CreatureFeature feature in features)
         {
             GameObject newFeatureUI = Instantiate(FeatureTemplatePrefab, contentTransform);
             newFeatureUI.name = feature.name;
@@ -583,10 +544,7 @@ public class MainMenuManager : MonoBehaviour
 
     private void SelectFeature(string featureName, bool isSelected)
     {
-        Debug.Log(featureName);
-        Debug.Log(loadedWorld.WorldName);
-
-        List<string> updatedFeatures = new List<string>(loadedWorld.SelectedFeatures);
+        List<string> updatedFeatures = new(loadedWorld.SelectedFeatures);
 
         // Check if the feature name contains any of the keywords "Body", "Eyes", or "Fins"
         string keyword = GetKeywordFromFeatureName(featureName);
@@ -612,7 +570,7 @@ public class MainMenuManager : MonoBehaviour
         // Save the new world to a JSON file
         World.WriteWorldJSON(loadedWorld);
 
-        List<Feature> selectedFeatures = FeatureFinder.GetFeatures(loadedWorld, "SelectedFeatures");
+        List<CreatureFeature> selectedFeatures = CreatureManager.GetFeaturesFromWorld(loadedWorld, "SelectedFeatures");
 
         CreateSelectedFeaturesUI(selectedFeatures);
 
@@ -737,12 +695,12 @@ public class MainMenuManager : MonoBehaviour
 
         foreach (string selectedFeature in world.SelectedFeatures)
         {
-            Feature feature = FeatureFinder.FindFeatureInItems(selectedFeature);
+            CreatureFeature feature = CreatureManager.FindFeatureInList(selectedFeature);
             if (feature != null)
             {
-                totalHealth += feature.stat.health;
-                totalSpeed += feature.stat.speed;
-                totalStrength += feature.stat.strength;
+                totalHealth += feature.stats.health;
+                totalSpeed += feature.stats.speed;
+                totalStrength += feature.stats.strength;
             }
             else
             {
@@ -788,11 +746,18 @@ public class MainMenuManager : MonoBehaviour
         }
     }
 
+    public void PlayButtonPress()
+    {
+        Gameplay.InitGame(loadedWorld);
+        creatorPanel.SetActive(false);
+
+    }
+
     #endregion
 
     // Quit the game
     public void QuitGame()
     {
-        //Application.Quit();
+        Application.Quit();
     }
 }

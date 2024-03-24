@@ -1,6 +1,6 @@
 %YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
---- !u!1001 &4754342247694484626
+--- !u!1001 &5756492186682447658
 PrefabInstance:
   m_ObjectHideFlags: 0
   serializedVersion: 2
@@ -10,23 +10,23 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 2130049681264563068, guid: 41162394da63f3f4b9a3eccaf760ba86, type: 3}
       propertyPath: m_Name
-      value: Blue_Eyes
+      value: Red_Eyes
       objectReference: {fileID: 0}
     - target: {fileID: 3135745241188871237, guid: 41162394da63f3f4b9a3eccaf760ba86, type: 3}
       propertyPath: m_Materials.Array.data[0]
       value: 
-      objectReference: {fileID: 2100000, guid: 5d091bb61bf6cf24dac14252b957a49b, type: 2}
+      objectReference: {fileID: 2100000, guid: d774754a15e39f645831bd1b252f2dcf, type: 2}
     - target: {fileID: 6466854168708454674, guid: 41162394da63f3f4b9a3eccaf760ba86, type: 3}
       propertyPath: m_LocalPosition.x
-      value: -6.115701
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 6466854168708454674, guid: 41162394da63f3f4b9a3eccaf760ba86, type: 3}
       propertyPath: m_LocalPosition.y
-      value: -2.7047887
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 6466854168708454674, guid: 41162394da63f3f4b9a3eccaf760ba86, type: 3}
       propertyPath: m_LocalPosition.z
-      value: 5.603047
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 6466854168708454674, guid: 41162394da63f3f4b9a3eccaf760ba86, type: 3}
       propertyPath: m_LocalRotation.w
