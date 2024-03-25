@@ -3,38 +3,78 @@ using UnityEngine;
 
 public class Gameplay : MonoBehaviour
 {
-    public static GameObject creatureBody;
-    public static GameObject enemyCreature;
-    public Camera mainCamera;
-    public float moveSpeed = 5f;
+    public static bool GameIsPaused { get; private set; } = false;
+    public GameObject creatureBody;
+    public GameObject enemyCreature;
     public GameObject background;
+    public float moveSpeed = 5f;
     public float enemyFollowSpeed = 2f;
+
+    public GameObject pauseMenuUI;
+    private MainMenuManager mainMenuManager;
+    private Camera mainCamera;
 
     private void Start()
     {
+        mainMenuManager = GetComponent<MainMenuManager>();
         mainCamera = Camera.main;
-        //InitializeGame();
     }
 
     private void Update()
     {
-        if (creatureBody != null)
+        if (Input.GetKeyDown(KeyCode.Escape))
+        {
+            TogglePause();
+        }
+
+        if (!GameIsPaused && creatureBody != null)
         {
             HandleMovement();
             FollowCreature();
         }
 
-        if (enemyCreature != null && creatureBody != null)
+        if (!GameIsPaused && enemyCreature != null && creatureBody != null)
         {
             FollowPlayerCreature();
         }
     }
 
-    public static void InitGame(World loadedWorld)
+    private void TogglePause()
+    {
+        GameIsPaused = !GameIsPaused;
+        Time.timeScale = GameIsPaused ? 0f : 1f;
+        mainMenuManager.ShowScreen(GameIsPaused ? MenuScreen.Pause : MenuScreen.Gameplay);
+    }
+
+    public void LoadSettings()
+    {
+        // Implement your settings menu loading logic here
+    }
+
+    public void EditCreature()
+    {
+        TogglePause();
+        Destroy(creatureBody);
+        Destroy(enemyCreature);
+        mainMenuManager.ShowScreen(MenuScreen.Creator);
+    }
+
+    public void QuitGame()
+    {
+        Destroy(creatureBody);
+        Destroy(enemyCreature);
+        mainMenuManager.ShowScreen(MenuScreen.PlayScreen);
+        GameIsPaused = false;
+    }
+
+    public void InitGame(World loadedWorld)
     {
         List<CreatureFeature> selectedFeatures = CreatureManager.GetFeaturesFromWorld(loadedWorld, "SelectedFeatures");
         creatureBody = CreatureManager.CreateSelectedFeatureModel(selectedFeatures);
         CreateRandomEnemy();
+        mainMenuManager.ShowScreen(MenuScreen.Gameplay);
+        GameIsPaused = false;
+        Time.timeScale = 1f;
     }
 
     private void HandleMovement()
@@ -93,7 +133,7 @@ public class Gameplay : MonoBehaviour
         background.transform.position = backgroundPosition;
     }
 
-    private static void CreateRandomEnemy()
+    private void CreateRandomEnemy()
     {
         List<CreatureFeature> enemyFeatures = new List<CreatureFeature>();
 

@@ -4,10 +4,11 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using TMPro;
+using UnityEditorInternal;
 using UnityEngine;
 using UnityEngine.UI;
 
-public enum MenuScreen { MainMenu, Settings, Credits, PlayScreen }
+public enum MenuScreen { MainMenu, Settings, Credits, PlayScreen, Creator,Pause, Gameplay }
 
 public class MainMenuManager : MonoBehaviour
 {
@@ -16,6 +17,8 @@ public class MainMenuManager : MonoBehaviour
     public GameObject settingsPanel;
     public GameObject creditsPanel;
     public GameObject playPanel;
+    public GameObject pausePanel;
+    public GameObject gameplayPanel;
     public GameObject creatorPanel;
     public GameObject templatePrefab;
     public GameObject FeatureTemplatePrefab;
@@ -29,6 +32,9 @@ public class MainMenuManager : MonoBehaviour
     private GameObject createWorldPanel;
     private GameObject editWorldPanel;
 
+    //Get the gameplay script
+    private Gameplay gameplay;
+
     // Variables to store user inputs for world creation/editing
     private string worldNameInput;
     private int difficultySliderValue = 1;
@@ -39,6 +45,7 @@ public class MainMenuManager : MonoBehaviour
     // Initialize UI elements and set the main menu as the initial screen
     private void Start()
     {
+        gameplay = GetComponent<Gameplay>();
         InitializeUI();
         ShowScreen(MenuScreen.MainMenu);
     }
@@ -53,6 +60,8 @@ public class MainMenuManager : MonoBehaviour
         createWorldPanel.SetActive(false);
         worldSelectionPanel.SetActive(false);
         editWorldPanel.SetActive(false);
+        pausePanel.SetActive(false);
+        gameplayPanel.SetActive(false);
 
         GameObject generalSettingsButton = settingsPanel.transform.Find("General").gameObject;
         GameObject soundSettingsButton = settingsPanel.transform.Find("Sound").gameObject;
@@ -64,7 +73,7 @@ public class MainMenuManager : MonoBehaviour
     #region ScreenManagement
 
     // Show the specified menu screen and hide all others
-    private void ShowScreen(MenuScreen screen)
+    public void ShowScreen(MenuScreen screen)
     {
         DisableAllPanels();
         EnableSelectedPanel(screen);
@@ -78,6 +87,8 @@ public class MainMenuManager : MonoBehaviour
         creditsPanel.SetActive(false);
         playPanel.SetActive(false);
         creatorPanel.SetActive(false);
+        pausePanel.SetActive(false);
+        gameplayPanel.SetActive(false);
     }
 
     // Enable the selected panel based on the specified menu screen
@@ -99,6 +110,15 @@ public class MainMenuManager : MonoBehaviour
                 playPanel.SetActive(true);
                 worldSelectionPanel.SetActive(true);
                 LoadAndDisplayWorlds();
+                break;
+            case MenuScreen.Creator:
+                creatorPanel.SetActive(true);
+                break;
+            case MenuScreen.Pause:
+                pausePanel.SetActive(true);
+                break;
+            case MenuScreen.Gameplay:
+                gameplayPanel.SetActive(true);
                 break;
         }
     }
@@ -486,8 +506,8 @@ public class MainMenuManager : MonoBehaviour
 
         CalculateAndDisplayStats(loadedWorld);
 
-        creatorPanel.SetActive(true);
-        playPanel.SetActive(false);
+        ShowScreen(MenuScreen.Creator);
+       // playPanel.SetActive(false);
     }
 
     // Create UI elements for selected features
@@ -748,7 +768,7 @@ public class MainMenuManager : MonoBehaviour
 
     public void PlayButtonPress()
     {
-        Gameplay.InitGame(loadedWorld);
+        gameplay.InitGame(loadedWorld);
         creatorPanel.SetActive(false);
 
     }
