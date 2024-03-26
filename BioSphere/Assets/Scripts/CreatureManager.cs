@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -42,9 +41,32 @@ public static class CreatureManager
     }
 
     // Find a feature by name from a collection of items
-    public static CreatureFeature FindFeatureInList(string featureName)
+    public static CreatureFeature FindFeatureInList(string featureName) => FeatureList.creatureFeatures.Find(feature => feature.name == featureName);
+
+    // Calculate statistics based on selected features
+    public static (int totalHealth, int totalSpeed, int totalStrength) CalculateStats(World world)
     {
-        return FeatureList.creatureFeatures.Find(feature => feature.name == featureName);
+        int totalHealth = 0;
+        int totalSpeed = 0;
+        int totalStrength = 0;
+
+        foreach (string selectedFeature in world.SelectedFeatures)
+        {
+            CreatureFeature feature = FindFeatureInList(selectedFeature);
+            if (feature != null)
+            {
+                totalHealth += feature.stats.health;
+                totalSpeed += feature.stats.speed;
+                totalStrength += feature.stats.strength;
+            }
+            else
+            {
+                Debug.Log("Could not find feature with name " + selectedFeature);
+                continue;
+            }
+        }
+
+        return (totalHealth, totalSpeed, totalStrength);
     }
 
     // Get features based on the world and type
@@ -65,7 +87,7 @@ public static class CreatureManager
                 return new List<CreatureFeature>();
         }
 
-        List<CreatureFeature> features = new List<CreatureFeature>();
+        List<CreatureFeature> features = new();
         foreach (string featureName in featureCollection)
         {
             CreatureFeature feature = FindFeatureInList(featureName);

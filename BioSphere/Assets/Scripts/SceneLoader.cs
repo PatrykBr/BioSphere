@@ -4,11 +4,10 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using TMPro;
-using UnityEditorInternal;
 using UnityEngine;
 using UnityEngine.UI;
 
-public enum MenuScreen { MainMenu, Settings, Credits, PlayScreen, Creator,Pause, Gameplay }
+public enum MenuScreen { MainMenu, Settings, Credits, PlayScreen, Creator, Pause, Gameplay }
 
 public class MainMenuManager : MonoBehaviour
 {
@@ -247,7 +246,16 @@ public class MainMenuManager : MonoBehaviour
             (difficultySliderValue == 0) ? "Easy" : (difficultySliderValue == 1) ? "Medium" : "Hard"
         )
         {
-            AvailableFeatures = new string[] { "Blue_Fins", "Green_Body", "Red_Eyes" }
+            AvailableFeatures = new string[] {
+                "Red_Fins",
+        "Blue_Fins",
+        "Green_Fins",
+        "Red_Body",
+        "Blue_Body",
+        "Green_Body",
+        "Red_Eyes",
+        "Blue_Eyes",
+        "Green_Eyes" }
         };
 
         // Get reference to error text UI element
@@ -504,10 +512,10 @@ public class MainMenuManager : MonoBehaviour
         CreateFeaturesUI(filteredFeatures, false);
         CreateSelectedFeaturesUI(selectedFeatures);
 
-        CalculateAndDisplayStats(loadedWorld);
+        (int totalHealth, int totalSpeed, int totalStrength) = CreatureManager.CalculateStats(loadedWorld);
+        UpdateStatsUI(totalHealth, totalSpeed, totalStrength);
 
         ShowScreen(MenuScreen.Creator);
-       // playPanel.SetActive(false);
     }
 
     // Create UI elements for selected features
@@ -594,7 +602,8 @@ public class MainMenuManager : MonoBehaviour
 
         CreateSelectedFeaturesUI(selectedFeatures);
 
-        CalculateAndDisplayStats(loadedWorld);
+        (int totalHealth, int totalSpeed, int totalStrength) = CreatureManager.CalculateStats(loadedWorld);
+        UpdateStatsUI(totalHealth, totalSpeed, totalStrength);
     }
 
     private string GetKeywordFromFeatureName(string featureName)
@@ -704,32 +713,6 @@ public class MainMenuManager : MonoBehaviour
     public void ShowFeatureTab(string category)
     {
         LoadWorld(category, null);
-    }
-
-    // Calculate and display statistics based on selected features
-    private void CalculateAndDisplayStats(World world)
-    {
-        int totalHealth = 0;
-        int totalSpeed = 0;
-        int totalStrength = 0;
-
-        foreach (string selectedFeature in world.SelectedFeatures)
-        {
-            CreatureFeature feature = CreatureManager.FindFeatureInList(selectedFeature);
-            if (feature != null)
-            {
-                totalHealth += feature.stats.health;
-                totalSpeed += feature.stats.speed;
-                totalStrength += feature.stats.strength;
-            }
-            else
-            {
-                Debug.Log("Could not find feature with name " + selectedFeature);
-                continue;
-            }
-        }
-
-        UpdateStatsUI(totalHealth, totalSpeed, totalStrength);
     }
 
     // Update UI with calculated statistics
