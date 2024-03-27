@@ -59,8 +59,6 @@ public class MainMenuManager : MonoBehaviour
         createWorldPanel.SetActive(false);
         worldSelectionPanel.SetActive(false);
         editWorldPanel.SetActive(false);
-        pausePanel.SetActive(false);
-        gameplayPanel.SetActive(false);
 
         GameObject generalSettingsButton = settingsPanel.transform.Find("General").gameObject;
         GameObject soundSettingsButton = settingsPanel.transform.Find("Sound").gameObject;
@@ -68,8 +66,6 @@ public class MainMenuManager : MonoBehaviour
         generalSettingsPanel = generalSettingsButton.transform.Find("Main").gameObject;
         soundSettingsPanel = soundSettingsButton.transform.Find("Main").gameObject;
     }
-
-    #region ScreenManagement
 
     // Show the specified menu screen and hide all others
     public void ShowScreen(MenuScreen screen)
@@ -149,10 +145,6 @@ public class MainMenuManager : MonoBehaviour
     // Check if create or edit world panel is active
     private bool IsCreateOrEditWorldPanelActive() => createWorldPanel.activeSelf || editWorldPanel.activeSelf;
 
-    #endregion
-
-    #region Settings
-
     // Select the general settings panel
     public void SelectGeneralSettings() => ActivateSettingsPanel(generalSettingsPanel, soundSettingsPanel);
 
@@ -165,10 +157,6 @@ public class MainMenuManager : MonoBehaviour
         activePanel.SetActive(true);
         inactivePanel.SetActive(false);
     }
-
-    #endregion
-
-    #region PlayScreen
 
     // Reset the create world panel UI elements
     private void ResetCreateWorldPanel()
@@ -509,7 +497,7 @@ public class MainMenuManager : MonoBehaviour
         List<CreatureFeature> selectedFeatures = CreatureManager.GetFeaturesFromWorld(loadedWorld, "SelectedFeatures");
 
         // Create UI elements for filtered features and selected features
-        CreateFeaturesUI(filteredFeatures, false);
+        CreateFeaturesUI(filteredFeatures);
         CreateSelectedFeaturesUI(selectedFeatures);
 
         (int totalHealth, int totalSpeed, int totalStrength) = CreatureManager.CalculateStats(loadedWorld);
@@ -540,7 +528,7 @@ public class MainMenuManager : MonoBehaviour
     }
 
     // Create UI elements for world features
-    private void CreateFeaturesUI(List<CreatureFeature> features, bool isSelectedFeatures)
+    private void CreateFeaturesUI(List<CreatureFeature> features)
     {
         Transform contentTransform = creatorPanel.transform.Find("Scroll View/Viewport/Content");
 
@@ -563,14 +551,14 @@ public class MainMenuManager : MonoBehaviour
                 RenderTextureToRawImage(featureObject, newFeatureUI.transform.Find("FeatureIcon").GetComponent<RawImage>(), renderCamera, renderTexture);
 
             Button featureButton = newFeatureUI.GetComponent<Button>();
-            featureButton.onClick.AddListener(() => SelectFeature(feature.name, !isSelectedFeatures));
+            featureButton.onClick.AddListener(() => SelectFeature(feature.name));
         }
 
         Destroy(renderCamera.gameObject);
         Destroy(renderTexture);
     }
 
-    private void SelectFeature(string featureName, bool isSelected)
+    private void SelectFeature(string featureName)
     {
         List<string> updatedFeatures = new(loadedWorld.SelectedFeatures);
 
@@ -580,16 +568,10 @@ public class MainMenuManager : MonoBehaviour
         if (!string.IsNullOrEmpty(keyword))
         {
             // If the feature is being selected, add it to the list
-            if (isSelected)
-            {
+
                 updatedFeatures.RemoveAll(f => f.Contains(keyword));
                 updatedFeatures.Add(featureName);
-            }
-            // If the feature is being deselected, remove it from the list
-            else
-            {
-                updatedFeatures.Remove(featureName);
-            }
+            
         }
 
         // Update the SelectedFeatures array in the loadedWorld object
@@ -755,8 +737,6 @@ public class MainMenuManager : MonoBehaviour
         creatorPanel.SetActive(false);
 
     }
-
-    #endregion
 
     // Quit the game
     public void QuitGame()

@@ -1,21 +1,21 @@
 {
   "Version": 1,
-  "WorkspaceRootPath": "C:\\Users\\Patryk\\OneDrive\\Documents\\Github\\BioSphere\\BioSphere\\",
+  "WorkspaceRootPath": "C:\\Users\\patbr\\source\\repos\\BioSphere\\BioSphere\\",
   "Documents": [
     {
-      "AbsoluteMoniker": "D:0:0:{4CF4BABB-0107-8984-9F3F-804BE49F16A8}|Assembly-CSharp.csproj|c:\\users\\patryk\\onedrive\\documents\\github\\biosphere\\biosphere\\assets\\scripts\\sceneloader.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "AbsoluteMoniker": "D:0:0:{4CF4BABB-0107-8984-9F3F-804BE49F16A8}|Assembly-CSharp.csproj|c:\\users\\patbr\\source\\repos\\biosphere\\biosphere\\assets\\scripts\\sceneloader.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{4CF4BABB-0107-8984-9F3F-804BE49F16A8}|Assembly-CSharp.csproj|solutionrelative:assets\\scripts\\sceneloader.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{4CF4BABB-0107-8984-9F3F-804BE49F16A8}|Assembly-CSharp.csproj|C:\\Users\\Patryk\\OneDrive\\Documents\\Github\\BioSphere\\BioSphere\\assets\\scripts\\creaturemanager.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{4CF4BABB-0107-8984-9F3F-804BE49F16A8}|Assembly-CSharp.csproj|solutionrelative:assets\\scripts\\creaturemanager.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{4CF4BABB-0107-8984-9F3F-804BE49F16A8}|Assembly-CSharp.csproj|C:\\Users\\Patryk\\OneDrive\\Documents\\Github\\BioSphere\\BioSphere\\assets\\scripts\\gameplay.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "AbsoluteMoniker": "D:0:0:{4CF4BABB-0107-8984-9F3F-804BE49F16A8}|Assembly-CSharp.csproj|C:\\Users\\patbr\\source\\repos\\BioSphere\\BioSphere\\assets\\scripts\\gameplay.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{4CF4BABB-0107-8984-9F3F-804BE49F16A8}|Assembly-CSharp.csproj|solutionrelative:assets\\scripts\\gameplay.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{4CF4BABB-0107-8984-9F3F-804BE49F16A8}|Assembly-CSharp.csproj|C:\\Users\\Patryk\\OneDrive\\Documents\\Github\\BioSphere\\BioSphere\\assets\\scripts\\worldsmanager.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "AbsoluteMoniker": "D:0:0:{4CF4BABB-0107-8984-9F3F-804BE49F16A8}|Assembly-CSharp.csproj|C:\\Users\\patbr\\source\\repos\\BioSphere\\BioSphere\\assets\\scripts\\creaturemanager.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{4CF4BABB-0107-8984-9F3F-804BE49F16A8}|Assembly-CSharp.csproj|solutionrelative:assets\\scripts\\creaturemanager.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{4CF4BABB-0107-8984-9F3F-804BE49F16A8}|Assembly-CSharp.csproj|C:\\Users\\patbr\\source\\repos\\BioSphere\\BioSphere\\assets\\scripts\\worldsmanager.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{4CF4BABB-0107-8984-9F3F-804BE49F16A8}|Assembly-CSharp.csproj|solutionrelative:assets\\scripts\\worldsmanager.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     }
   ],
@@ -30,26 +30,25 @@
           "Children": [
             {
               "$type": "Document",
-              "DocumentIndex": 1,
+              "DocumentIndex": 2,
               "Title": "CreatureManager.cs",
-              "DocumentMoniker": "C:\\Users\\Patryk\\OneDrive\\Documents\\Github\\BioSphere\\BioSphere\\Assets\\Scripts\\CreatureManager.cs",
+              "DocumentMoniker": "C:\\Users\\patbr\\source\\repos\\BioSphere\\BioSphere\\Assets\\Scripts\\CreatureManager.cs",
               "RelativeDocumentMoniker": "Assets\\Scripts\\CreatureManager.cs",
-              "ToolTip": "C:\\Users\\Patryk\\OneDrive\\Documents\\Github\\BioSphere\\BioSphere\\Assets\\Scripts\\CreatureManager.cs",
+              "ToolTip": "C:\\Users\\patbr\\source\\repos\\BioSphere\\BioSphere\\Assets\\Scripts\\CreatureManager.cs",
               "RelativeToolTip": "Assets\\Scripts\\CreatureManager.cs",
-              "ViewState": "AQIAADAAAAAAAAAAAAAmwFwAAAApAAAA",
+              "ViewState": "AQIAADsAAAAAAAAAAAAswFwAAAAiAAAA",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2024-03-05T16:18:09.061Z",
-              "EditorCaption": ""
+              "WhenOpened": "2024-03-05T16:18:09.061Z"
             },
             {
               "$type": "Document",
               "DocumentIndex": 3,
               "Title": "WorldsManager.cs",
-              "DocumentMoniker": "C:\\Users\\Patryk\\OneDrive\\Documents\\Github\\BioSphere\\BioSphere\\Assets\\Scripts\\WorldsManager.cs",
+              "DocumentMoniker": "C:\\Users\\patbr\\source\\repos\\BioSphere\\BioSphere\\Assets\\Scripts\\WorldsManager.cs",
               "RelativeDocumentMoniker": "Assets\\Scripts\\WorldsManager.cs",
-              "ToolTip": "C:\\Users\\Patryk\\OneDrive\\Documents\\Github\\BioSphere\\BioSphere\\Assets\\Scripts\\WorldsManager.cs",
+              "ToolTip": "C:\\Users\\patbr\\source\\repos\\BioSphere\\BioSphere\\Assets\\Scripts\\WorldsManager.cs",
               "RelativeToolTip": "Assets\\Scripts\\WorldsManager.cs",
-              "ViewState": "AQIAAAAAAAAAAAAAAAAAABEAAAAAAAAA",
+              "ViewState": "AQIAAAAAAAAAAAAAAAAAAAsAAAAkAAAA",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2023-12-08T22:12:18.299Z"
             },
@@ -57,22 +56,22 @@
               "$type": "Document",
               "DocumentIndex": 0,
               "Title": "SceneLoader.cs",
-              "DocumentMoniker": "C:\\Users\\Patryk\\OneDrive\\Documents\\Github\\BioSphere\\BioSphere\\Assets\\Scripts\\SceneLoader.cs",
+              "DocumentMoniker": "C:\\Users\\patbr\\source\\repos\\BioSphere\\BioSphere\\Assets\\Scripts\\SceneLoader.cs",
               "RelativeDocumentMoniker": "Assets\\Scripts\\SceneLoader.cs",
-              "ToolTip": "C:\\Users\\Patryk\\OneDrive\\Documents\\Github\\BioSphere\\BioSphere\\Assets\\Scripts\\SceneLoader.cs",
+              "ToolTip": "C:\\Users\\patbr\\source\\repos\\BioSphere\\BioSphere\\Assets\\Scripts\\SceneLoader.cs",
               "RelativeToolTip": "Assets\\Scripts\\SceneLoader.cs",
-              "ViewState": "AQIAAHMBAAAAAAAAAAAswJIBAAAFAAAA",
+              "ViewState": "AQIAAOoCAAAAAAAAAAAAAFwCAAAFAAAA",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2023-11-28T17:38:42.616Z",
               "EditorCaption": ""
             },
             {
               "$type": "Document",
-              "DocumentIndex": 2,
+              "DocumentIndex": 1,
               "Title": "Gameplay.cs",
-              "DocumentMoniker": "C:\\Users\\Patryk\\OneDrive\\Documents\\Github\\BioSphere\\BioSphere\\Assets\\Scripts\\Gameplay.cs",
+              "DocumentMoniker": "C:\\Users\\patbr\\source\\repos\\BioSphere\\BioSphere\\Assets\\Scripts\\Gameplay.cs",
               "RelativeDocumentMoniker": "Assets\\Scripts\\Gameplay.cs",
-              "ToolTip": "C:\\Users\\Patryk\\OneDrive\\Documents\\Github\\BioSphere\\BioSphere\\Assets\\Scripts\\Gameplay.cs",
+              "ToolTip": "C:\\Users\\patbr\\source\\repos\\BioSphere\\BioSphere\\Assets\\Scripts\\Gameplay.cs",
               "RelativeToolTip": "Assets\\Scripts\\Gameplay.cs",
               "ViewState": "AQIAABgAAAAAAAAAAAAowFoAAAAuAAAA",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
