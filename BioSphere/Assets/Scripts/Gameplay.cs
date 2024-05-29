@@ -3,20 +3,16 @@ using UnityEngine;
 
 public class Gameplay : MonoBehaviour
 {
-    // Static variable to track if the game is paused
-    public static bool GameIsPaused { get; private set; } = false;
-    public GameObject background; // The background object
+    private bool GameIsPaused = false;
+    public GameObject background;
 
     // References to game objects in the scene
-    private GameObject creatureBody; // The player-controlled creature
-    private GameObject enemyCreature; // The enemy creature
+    private GameObject creatureBody;
+    private GameObject enemyCreature;
     private float moveSpeed = 4f; // Speed at which the player creature moves
     private float enemyFollowSpeed = 3f; // Speed at which the enemy creature follows the player
-
-    // Reference to the MainMenuManager script
+    private float despawnDistance = 10f; // Define a variable for the despawn distance
     private MainMenuManager mainMenuManager;
-
-    // Reference to the main camera
     private Camera mainCamera;
 
     private void Start()
@@ -58,11 +54,6 @@ public class Gameplay : MonoBehaviour
         }
     }
 
-    // Define a variable for the despawn distance
-    public float despawnDistance = 10f;
-
-
-    // Initialize the game with a loaded world
     // Initialize the game with a loaded world
     public void InitGame(World loadedWorld)
     {
@@ -70,16 +61,12 @@ public class Gameplay : MonoBehaviour
         List<CreatureFeature> selectedFeatures = CreatureManager.GetFeaturesFromWorld(loadedWorld, "SelectedFeatures");
         creatureBody = CreatureManager.CreateSelectedFeatureModel(selectedFeatures);
 
-        // Create random enemy creature
-        CreateRandomEnemy();
+        CreateRandomEnemy(); // Create random enemy creature
 
-        // Show gameplay UI
-        mainMenuManager.ShowScreen(MenuScreen.Gameplay);
+        mainMenuManager.ShowScreen(MenuScreen.Gameplay); // Show gameplay UI
 
         // Unpause the game
         GameIsPaused = false;
-
-        // Ensure time scale is set to normal
         Time.timeScale = 1f;
 
         // Adjust enemy creature speed based on world difficulty
@@ -92,7 +79,6 @@ public class Gameplay : MonoBehaviour
         float speedIncreasePercentage = totalSpeed * 0.01f; // Convert totalSpeed to percentage
         moveSpeed *= (1f + speedIncreasePercentage); // Increase move speed by the percentage
     }
-
 
     // Method to adjust the speed of the enemy creature based on world difficulty
     private void AdjustEnemyCreatureSpeed(string worldDifficulty)
@@ -111,8 +97,7 @@ public class Gameplay : MonoBehaviour
                 enemyFollowSpeed -= enemyFollowSpeed * mediumModifier;
                 break;
             case "Hard":
-                // No change in enemy creature speed for "Hard" difficulty
-                break;
+                break; // No change in enemy creature speed for "Hard" difficulty
             default:
                 Debug.LogWarning("Unknown difficulty level. No adjustment made to enemy creature speed.");
                 break;
@@ -151,7 +136,7 @@ public class Gameplay : MonoBehaviour
         Vector2 input = GetInput(); // Get input from player
         MoveCreature(input); // Move player creature
         RotateCreature(input); // Rotate player creature
-        RotateFin(input, creatureBody); // Rotate fin of player creature
+        RotatePlayerFin(input, creatureBody); // Rotate fin of player creature
     }
 
     // Get player input
@@ -176,7 +161,7 @@ public class Gameplay : MonoBehaviour
     }
 
     // Rotate the fin of the creature based on input
-    private void RotateFin(Vector2 input, GameObject target)
+    private void RotatePlayerFin(Vector2 input, GameObject target)
     {
         Transform finTransform = target.transform.Find("Fin");
 
@@ -207,10 +192,11 @@ public class Gameplay : MonoBehaviour
         backgroundPosition.z = background.transform.position.z;
         background.transform.position = backgroundPosition;
     }
+
     // Create a random enemy creature near the player
     private void CreateRandomEnemy()
     {
-        float spawnRadius = 5f; // Define a radius for the enemy spawn distance from the player
+        float spawnRadius = 5f; // the radius for the enemy to spawn from the player
 
         // Calculate a random angle around the player creature
         float randomAngle = Random.Range(0f, Mathf.PI * 2f);
@@ -221,10 +207,11 @@ public class Gameplay : MonoBehaviour
         // Instantiate the enemy creature at the calculated spawn position
         List<CreatureFeature> enemyFeatures = new()
         {
-        CreatureManager.SelectRandomFeature("Fins"), // Select a random feature for enemy fins
-        CreatureManager.SelectRandomFeature("Eyes"), // Select a random feature for enemy eyes
-        CreatureManager.SelectRandomFeature("Body") // Select a random feature for enemy body
-    };
+            // select random feature
+            CreatureManager.SelectRandomFeature("Fins"),
+            CreatureManager.SelectRandomFeature("Eyes"),
+            CreatureManager.SelectRandomFeature("Body")
+        };
         enemyCreature = CreatureManager.CreateSelectedFeatureModel(enemyFeatures); // Create enemy creature
 
         // Set the position of the enemy creature
@@ -241,7 +228,7 @@ public class Gameplay : MonoBehaviour
         Quaternion targetRotation = Quaternion.LookRotation(Vector3.forward, directionToPlayer);
         enemyCreature.transform.rotation = Quaternion.Slerp(enemyCreature.transform.rotation, targetRotation, Time.deltaTime * enemyFollowSpeed);
 
-        RotateFin(directionToPlayer, enemyCreature);
+        RotateEnemyFin(directionToPlayer, enemyCreature);
 
         Vector3 desiredEnemyPosition = creatureBody.transform.position - (creatureBody.transform.position - enemyCreature.transform.position) * 0.5f;
 
@@ -253,7 +240,7 @@ public class Gameplay : MonoBehaviour
     }
 
     // Rotate the fin of the creature based on movement direction
-    private void RotateFin(Vector3 moveDirection, GameObject target)
+    private void RotateEnemyFin(Vector3 moveDirection, GameObject target)
     {
         Transform finTransform = target.transform.Find("Fin");
 

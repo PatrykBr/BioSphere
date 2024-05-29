@@ -7134,7 +7134,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   background: {fileID: 485340524}
-  despawnDistance: 10
 --- !u!1001 &815558012
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -12641,8 +12640,8 @@ MonoBehaviour:
       m_Calls:
       - m_Target: {fileID: 814088930}
         m_TargetAssemblyTypeName: MainMenuManager, Assembly-CSharp
-        m_MethodName: HandleConfirmationButtonClick
-        m_Mode: 6
+        m_MethodName: CancelDelete
+        m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
           m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine

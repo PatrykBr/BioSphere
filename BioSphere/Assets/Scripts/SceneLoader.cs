@@ -445,6 +445,14 @@ public class MainMenuManager : MonoBehaviour
         confirmationText.text = $"Are you sure you would like to delete \"{loadedWorld.WorldName}\"?";
     }
 
+    public void CancelDelete()
+    {
+        GameObject EditScreen = editWorldPanel.transform.Find("EditScreen").gameObject;
+        GameObject ConfirmationScreen = editWorldPanel.transform.Find("Confirmation").gameObject;
+        EditScreen.SetActive(true);
+        ConfirmationScreen.SetActive(false);
+    }
+
     // Deletes the selected world file
     public void DeleteWorld()
     {
@@ -569,9 +577,9 @@ public class MainMenuManager : MonoBehaviour
         {
             // If the feature is being selected, add it to the list
 
-                updatedFeatures.RemoveAll(f => f.Contains(keyword));
-                updatedFeatures.Add(featureName);
-            
+            updatedFeatures.RemoveAll(f => f.Contains(keyword));
+            updatedFeatures.Add(featureName);
+
         }
 
         // Update the SelectedFeatures array in the loadedWorld object

@@ -120,7 +120,7 @@ public static class CreatureManager
     // Load a feature prefab from resources
     private static GameObject LoadFeaturePrefab(List<CreatureFeature> features, string keyword)
     {
-        CreatureFeature feature = features.Find(f => f.name.Contains(keyword));
+        CreatureFeature feature = features.Find(featureName => featureName.name.Contains(keyword));
         return feature != null ? Resources.Load<GameObject>("FeaturePrefabs/" + feature.name) : null;
     }
 
